@@ -1,0 +1,32 @@
+public class Game {
+    Field field = new Field();
+    public static final int PLACE_PHASE = 0;
+    public static final int MOVE_PHASE = 1;
+    public static final int END_PHASE = 2;
+
+    private int currentPhase = PLACE_PHASE;
+
+    private boolean lastMoveByColour = Field.COLOUR_BLACK;
+
+    private void checkTurns(boolean moveByColour) throws IllegalMoveException {
+        if (moveByColour == lastMoveByColour) throw new IllegalMoveException("It's the other player's turn.");
+        else lastMoveByColour = moveByColour;
+    }
+
+    public void placeStone(int posX, int posY, boolean colour) throws IllegalMoveException {
+        if (currentPhase != PLACE_PHASE) {
+            throw new IllegalMoveException("The game is currently not in the place phase.");
+        }
+        checkTurns(colour);
+        field.placeStone(posX, posY, colour);
+    }
+
+    public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+        if (currentPhase != MOVE_PHASE) {
+            throw new IllegalMoveException("The game is currently not in the move phase.");
+        }
+        Boolean stone = field.getStone(posX, posY);
+        checkTurns(stone);
+        field.moveStone(posX, posY, toPosX, toPosY);
+    }
+}
