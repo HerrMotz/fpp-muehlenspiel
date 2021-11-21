@@ -92,9 +92,9 @@ class GridTest {
     }
 
     @Test
-    void moveStone() {
+    void jumpStone() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            grid.moveStone(1, 3, 1, 5);
+            grid.jumpStone(1, 3, 1, 5);
         }, "IllegalMoveException was expected");
 
         Assertions.assertEquals("You may only move stones, so please choose a not empty field.", thrown.getMessage());
@@ -107,7 +107,7 @@ class GridTest {
         }
 
         try {
-            grid.moveStone(1, 3, 1, 5);
+            grid.jumpStone(1, 3, 1, 5);
         } catch (IllegalMoveException e) {
             fail("Expected no exception, got: " + e.getMessage());
         }
@@ -119,14 +119,14 @@ class GridTest {
         }
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            grid.moveStone(1, 5, 1, 3);
+            grid.jumpStone(1, 5, 1, 3);
         }, "IllegalMoveException was expected");
 
         Assertions.assertEquals("You may only move stones to empty fields.", thrown.getMessage());
         System.out.println(thrown.getMessage());
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            grid.moveStone(1, 5, 1, 5);
+            grid.jumpStone(1, 5, 1, 5);
         }, "IllegalMoveException was expected");
 
         Assertions.assertEquals("A move to the same field is not allowed.", thrown.getMessage());
@@ -242,5 +242,33 @@ class GridTest {
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
+    }
+
+    @Test
+    void moveStoneToAdjacentField() {
+        IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
+            grid.moveStoneToAdjacentField(5,3,4,2);
+        }, "IllegalMoveException was expected");
+
+        Assertions.assertEquals("The fields are not adjacent to each other.", thrown.getMessage());
+        System.out.println(thrown.getMessage());
+
+        try {
+            grid.placeStone(2,3, Grid.COLOUR_WHITE);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+
+        try {
+            grid.moveStoneToAdjacentField(2, 3, 2, 2);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+
+        try {
+            grid.moveStoneToAdjacentField(2, 2, 3, 2);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
     }
 }
