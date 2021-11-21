@@ -1,9 +1,10 @@
 public class Game {
-    Field field = new Field();
+    Field field = new Field(7, 7);
     public static final int PLACE_PHASE = 0;
     public static final int MOVE_PHASE = 1;
     public static final int END_PHASE = 2;
 
+    @SuppressWarnings("FieldMayBeFinal")
     private int currentPhase = PLACE_PHASE;
 
     private boolean lastMoveByColour = Field.COLOUR_BLACK;
@@ -21,12 +22,19 @@ public class Game {
         field.placeStone(posX, posY, colour);
     }
 
-    public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+    public void moveStoneToAdjacentField(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
         if (currentPhase != MOVE_PHASE) {
             throw new IllegalMoveException("The game is currently not in the move phase.");
         }
         Boolean stone = field.getStone(posX, posY);
         checkTurns(stone);
-        field.moveStone(posX, posY, toPosX, toPosY);
+        field.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
+    }
+
+    public void jumpStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+        if (currentPhase != END_PHASE) {
+            throw new IllegalMoveException("The game is currently not in the end phase.");
+        }
+
     }
 }
