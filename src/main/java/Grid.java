@@ -195,7 +195,7 @@ public class Grid {
      * @throws IllegalArgumentException If the position is invalid on the field's grid
      * @throws ArrayIndexOutOfBoundsException If the position is out of bounds for the field's grid.
      */
-    public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+    public void jumpStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
         if (posX == toPosX && posY == toPosY)
             throw new IllegalMoveException("A move to the same field is not allowed.");
 
@@ -212,7 +212,11 @@ public class Grid {
     }
 
     public void moveStoneToAdjacentField(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
-        moveStone(posX, posY, toPosX, toPosY);
+        if (areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
+            jumpStone(posX, posY, toPosX, toPosY);
+        } else {
+            throw new IllegalMoveException("The fields are not adjacent to each other.");
+        }
     }
 
     /**
