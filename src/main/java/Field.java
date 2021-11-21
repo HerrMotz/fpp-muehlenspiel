@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Field {
     public static final boolean COLOUR_BLACK = false;
     public static final boolean COLOUR_WHITE = true;
@@ -45,15 +48,19 @@ public class Field {
         }
     }
 
-    private void getAdjacentFieldsLoop(int moveCoordinate, int limitMoveCoordinate, int step, int fixCoordinate) {
+    private List<Pair<Integer, Integer>> getAdjacentFieldsLoop(int moveCoordinate, int limitMoveCoordinate, int step, int fixCoordinate) {
+        List<Pair<Integer, Integer>> adjacentFields = new ArrayList<>();
+
         while (moveCoordinate < limitMoveCoordinate && moveCoordinate >= 0) {
             moveCoordinate = moveCoordinate + step;
             try {
                 checkValidityOfFieldPosition(moveCoordinate, fixCoordinate);
-                System.out.println("Adjacent field at: (" + moveCoordinate + "," + fixCoordinate + ")");
+                adjacentFields.add(new Pair<>(moveCoordinate, fixCoordinate));
                 break;
             } catch (IllegalMoveException ignored) {}
         }
+
+        return adjacentFields;
     }
 
     public void getAdjacentFields(int posX, int posY) throws IllegalMoveException {
@@ -75,15 +82,19 @@ public class Field {
 //        int numberOfFoundFields = 0;
 
 
-        // TODO Make this in a mathematically pretty way instead of bruteforce
+        // TODO Redo this in a mathematically pleasing way
+        List<Pair<Integer, Integer>> adjacentFields = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            switch (i) {
+            adjacentFields.addAll(switch (i) {
                 case 0 -> getAdjacentFieldsLoop(posX, LIMIT_X,  1, posY);
                 case 1 -> getAdjacentFieldsLoop(posX, LIMIT_X, -1, posY);
                 case 2 -> getAdjacentFieldsLoop(posY, LIMIT_Y,  1, posX);
                 case 3 -> getAdjacentFieldsLoop(posY, LIMIT_Y, -1, posX);
-            }
+                default -> throw new IllegalStateException("Unexpected value: " + i);
+            });
         }
+
+        System.out.println(adjacentFields);
 }
 
     private void areFieldsAdjacent(int posX, int posY, int posX2, int posY2) throws IllegalMoveException {
