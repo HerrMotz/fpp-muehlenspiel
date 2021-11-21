@@ -3,10 +3,17 @@ public class Field {
     public static final boolean COLOUR_WHITE = true;
     public static final Boolean NO_STONE = null;
 
-    public static int LIMIT_X = 7;
-    public static int LIMIT_Y = 7;
+    public final int LIMIT_X;
+    public final int LIMIT_Y;
 
-    private Boolean[][] field = new Boolean[LIMIT_X][LIMIT_Y];
+    @SuppressWarnings("FieldMayBeFinal")
+    private Boolean[][] field;
+
+    public Field(int limitX, int limitY) {
+        LIMIT_X = limitX;
+        LIMIT_Y = limitY;
+        field = new Boolean[LIMIT_X][LIMIT_Y];
+    }
 
     /**
      * Checks, whether a field position is valid or out of bounds (helper function)
@@ -18,17 +25,70 @@ public class Field {
      * @throws IllegalArgumentException If the position is invalid on the field's grid
      * @throws ArrayIndexOutOfBoundsException If the position is out of bounds for the field's grid
      */
-    private void checkValidityOfFieldPosition(int posX, int posY) throws IllegalArgumentException, ArrayIndexOutOfBoundsException, IllegalMoveException {
+    private void checkValidityOfFieldPosition(int posX, int posY) throws IllegalMoveException {
         if (posX >= LIMIT_X || posY >= LIMIT_Y || posX < 0 || posY < 0) {
             throw new IllegalMoveException("The given x- or y-positions do not exist in a nine men's morris game. A field is 7x7 and the given values are out of bounds.");
         }
-        if (    (posX == 0 && (posY == 1 || posY == 2 || posY == 4 || posY == 5)) ||
-                (posX == 1 && (posY == 0 || posY == 2 || posY == 4 || posY == 6)) ||
-                (posX == 2 && (posY == 0 || posY == 1 || posY == 5 || posY == 6)) ||
+
+        if (posX > Math.floorDiv(LIMIT_X, 2))
+            posX = (LIMIT_X - 1 - posX) % (LIMIT_X - 1);
+
+        if (posY > Math.floorDiv(LIMIT_Y, 2))
+            posY = (LIMIT_Y - 1 - posY) % (LIMIT_Y - 1);
+
+        if (    (posX == 0 && (posY == 1 || posY == 2)) ||
+                (posX == 1 && (posY == 0 || posY == 2)) ||
+                (posX == 2 && (posY == 0 || posY == 1)) ||
                 (posX == 3 && posY == 3)
         ) {
             throw new IllegalMoveException("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.");
         }
+    }
+
+    private void getAdjacentFieldsLoop(int moveCoordinate, int limitMoveCoordinate, int step, int fixCoordinate) {
+        while (moveCoordinate < limitMoveCoordinate && moveCoordinate >= 0) {
+            moveCoordinate = moveCoordinate + step;
+            try {
+                checkValidityOfFieldPosition(moveCoordinate, fixCoordinate);
+                System.out.println("Adjacent field at: (" + moveCoordinate + "," + fixCoordinate + ")");
+                break;
+            } catch (IllegalMoveException ignored) {}
+        }
+    }
+
+    public void getAdjacentFields(int posX, int posY) throws IllegalMoveException {
+        checkValidityOfFieldPosition(posX, posY);
+
+//        int expectedNumberOfAdjacentFields = 0;
+//
+//        if (posX == posY) {
+//            // 2 benachbarte Felder
+//            expectedNumberOfAdjacentFields = 2;
+//        } else if (posX - posY == 1) {
+//            // 3 benachbarte Felder
+//            expectedNumberOfAdjacentFields = 3;
+//        } else if (posX - posY == 2) {
+//            // 4 benachbarte Felder
+//            expectedNumberOfAdjacentFields = 4;
+//        }
+//
+//        int numberOfFoundFields = 0;
+
+
+        // TODO Make this in a mathematically pretty way instead of bruteforce
+        for (int i = 0; i < 4; i++) {
+            switch (i) {
+                case 0 -> getAdjacentFieldsLoop(posX, LIMIT_X,  1, posY);
+                case 1 -> getAdjacentFieldsLoop(posX, LIMIT_X, -1, posY);
+                case 2 -> getAdjacentFieldsLoop(posY, LIMIT_Y,  1, posX);
+                case 3 -> getAdjacentFieldsLoop(posY, LIMIT_Y, -1, posX);
+            }
+        }
+}
+
+    private void areFieldsAdjacent(int posX, int posY, int posX2, int posY2) throws IllegalMoveException {
+        checkValidityOfFieldPosition(posX, posY);
+        checkValidityOfFieldPosition(posX2, posY2);
     }
 
     /**
@@ -102,11 +162,15 @@ public class Field {
             throw new IllegalMoveException("You may only move stones, so please choose a not empty field.");
 
         Boolean toStone = getStone(toPosX, toPosY);
-        if (toStone != NO_STONE)
+       if (toStone != NO_STONE)
             throw new IllegalMoveException("You may only move stones to empty fields.");
 
         removeStone(posX, posY);
         placeStone(toPosX, toPosY, stone);
+    }
+
+    public void moveStoneToAdjacentField(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+        moveStone(posX, posY, toPosX, toPosY);
     }
 
     /**
