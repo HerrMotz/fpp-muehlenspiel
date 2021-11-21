@@ -3,6 +3,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -199,10 +200,14 @@ class FieldTest {
 
     @Test
     void getAdjacentFields() {
-        try {
-            field.getAdjacentFields(3, 0);
-        } catch (IllegalMoveException e) {
-            System.out.println("Lel");
+        for (int i = 0; i < field.LIMIT_X; i++) {
+            for (int j = 0; j < field.LIMIT_Y; j++) {
+                try {
+                    List<Pair<Integer, Integer>> adjacentFields = field.getAdjacentFields(i, j);
+                    System.out.println("("+i+","+j+"): " + adjacentFields);
+                } catch (IllegalMoveException ignored) {}
+            }
         }
+
     }
 }
