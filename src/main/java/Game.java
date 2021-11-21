@@ -2,7 +2,7 @@ public class Game {
     Grid grid = new Grid(7, 7);
     public static final int PLACE_PHASE = 0;
     public static final int MOVE_PHASE = 1;
-    public static final int END_PHASE = 2;
+    public static final int JUMP_PHASE = 2;
 
     @SuppressWarnings("FieldMayBeFinal")
     private int currentPhase = PLACE_PHASE;
@@ -22,19 +22,23 @@ public class Game {
         grid.placeStone(posX, posY, colour);
     }
 
-    public void moveStoneToAdjacentField(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
-        if (currentPhase != MOVE_PHASE) {
-            throw new IllegalMoveException("The game is currently not in the move phase.");
+    public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+        if (currentPhase != JUMP_PHASE) {
+            if (currentPhase != MOVE_PHASE) {
+                throw new IllegalMoveException("You cannot move any stones in this stage of the game");
+            } else {
+                if (!grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
+                    throw new IllegalMoveException("The fields are not adjacent to each other");
+                } else {
+                    Boolean stone = grid.getStone(posX, posY);
+                    checkTurns(stone);
+                    grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
+                }
+            }
+        } else {
+            Boolean stone = grid.getStone(posX, posY);
+            checkTurns(stone);
+            grid.jumpStone(posX, posY, toPosX, toPosY);
         }
-        Boolean stone = grid.getStone(posX, posY);
-        checkTurns(stone);
-        grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
-    }
-
-    public void jumpStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
-        if (currentPhase != END_PHASE) {
-            throw new IllegalMoveException("The game is currently not in the end phase.");
-        }
-
     }
 }
