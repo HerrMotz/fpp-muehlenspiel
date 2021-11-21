@@ -227,4 +227,25 @@ public class Grid {
     public Boolean[][] getGrid() {
         return grid;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int y = 0; y < LIMIT_Y; y++) {
+            for (int x = 0; x < LIMIT_X; x++) {
+                try {
+                    Boolean stone = getStone(x, y);
+                    String m = " ";
+                    if (stone == NO_STONE) m = "o";
+                    else if (stone == COLOUR_BLACK) m = "B";
+                    else if (stone == COLOUR_WHITE) m = "W";
+                    stringBuilder.append(m).append(" ");
+                } catch (IllegalMoveException ignored) {
+                    stringBuilder.append("  ");
+                }
+            }
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
 }
