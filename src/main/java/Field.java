@@ -63,7 +63,7 @@ public class Field {
         return adjacentFields;
     }
 
-    public void getAdjacentFields(int posX, int posY) throws IllegalMoveException {
+    public List<Pair<Integer, Integer>> getAdjacentFields(int posX, int posY) throws IllegalMoveException {
         checkValidityOfFieldPosition(posX, posY);
 
 //        int expectedNumberOfAdjacentFields = 0;
@@ -94,7 +94,7 @@ public class Field {
             });
         }
 
-        System.out.println(adjacentFields);
+        return adjacentFields;
 }
 
     private void areFieldsAdjacent(int posX, int posY, int posX2, int posY2) throws IllegalMoveException {
