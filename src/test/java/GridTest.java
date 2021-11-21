@@ -2,7 +2,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -155,15 +154,7 @@ class GridTest {
         assertEquals(result[1][1], Grid.COLOUR_BLACK);
         assertEquals(result[5][1], Grid.COLOUR_BLACK);
 
-        Arrays.stream(result).forEach((i) -> {
-            Arrays.stream(i).forEach((j) ->  {
-                String m = "o";
-                if (j != null)
-                    m = j ? "W" : "B";
-                System.out.print(m + " ");
-            });
-            System.out.println();
-        });
+        System.out.println(grid);
     }
 
     @Test
