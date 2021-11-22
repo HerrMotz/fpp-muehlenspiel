@@ -1,3 +1,6 @@
+import backend.Game;
+import backend.Grid;
+import backend.IllegalMoveException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,18 +19,18 @@ public class GameTest {
     void firstMove() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             game.placeStone(6, 6, Grid.COLOUR_BLACK);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
 
         try {
             game.placeStone(6, 6, Grid.COLOUR_WHITE);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             game.placeStone(0, 0, Grid.COLOUR_WHITE);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
     }
 
@@ -41,7 +44,7 @@ public class GameTest {
             game.placeStone(2, 3, Grid.COLOUR_BLACK);
             game.placeStone(4, 3, Grid.COLOUR_WHITE);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
     }
 
@@ -53,7 +56,7 @@ public class GameTest {
             game.placeStone(3, 4, Grid.COLOUR_WHITE);
             game.placeStone(5, 3, Grid.COLOUR_BLACK);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
     }
 
@@ -66,7 +69,7 @@ public class GameTest {
             game.placeStone(4, 4, Grid.COLOUR_WHITE);
             game.placeStone(6, 6, Grid.COLOUR_BLACK);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
     }
 
@@ -78,7 +81,7 @@ public class GameTest {
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             game.placeStone(6, 6, Grid.COLOUR_WHITE);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
 
         makeSomeMoves2();
@@ -97,7 +100,7 @@ public class GameTest {
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             game.placeStone(3, 1, Grid.COLOUR_BLACK);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("The game is currently not in the place phase.", thrown.getMessage());
     }
 
@@ -112,18 +115,18 @@ public class GameTest {
         try {
             game.moveStone(3, 4, 2, 4);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             game.moveStone(3, 6, 3, 4);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("The fields are not adjacent to each other.", thrown.getMessage());
 
         try {
             game.moveStone(3, 6, 3, 5);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
 
         System.out.println(game);

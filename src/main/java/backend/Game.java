@@ -1,3 +1,5 @@
+package backend;
+
 public class Game {
     private Grid grid = new Grid(7, 7);
     public static final int PLACE_PHASE = 0;

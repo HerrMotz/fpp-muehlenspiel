@@ -1,3 +1,6 @@
+import backend.Grid;
+import backend.IllegalMoveException;
+import backend.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +22,12 @@ class GridTest {
         try {
             grid.getStone(0, 0);
         } catch (IllegalMoveException e) {
-            fail("No exception expected, but got IllegalMoveException");
+            fail("No exception expected, but got backend.IllegalMoveException");
         }
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.getStone(3, 3);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
     }
 
@@ -38,7 +41,7 @@ class GridTest {
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.placeStone(0, 0, Grid.COLOUR_BLACK);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("There already is a stone at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -48,7 +51,7 @@ class GridTest {
     void placeStoneOutsideTheField() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.placeStone(-1, 8, Grid.COLOUR_BLACK);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. " +
                 "A grid is 7x7 and the given values are out of bounds.", thrown.getMessage());
@@ -59,7 +62,7 @@ class GridTest {
     void placeStoneInsideTheFieldButAtAnInvalidOne() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.placeStone(0, 1, Grid.COLOUR_BLACK);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -69,7 +72,7 @@ class GridTest {
     void removeAStoneWhereThereIsNone() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.removeStone(0, 0);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("There is no stone at the given field.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -94,7 +97,7 @@ class GridTest {
     void jumpStone() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.jumpStone(1, 3, 1, 5);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("You may only move stones, so please choose a not empty field.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -119,14 +122,14 @@ class GridTest {
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.jumpStone(1, 5, 1, 3);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("You may only move stones to empty fields.", thrown.getMessage());
         System.out.println(thrown.getMessage());
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.jumpStone(1, 5, 1, 5);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("A move to the same field is not allowed.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -161,21 +164,21 @@ class GridTest {
     void validityCheckOfFields() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.placeStone(4, 5, Grid.COLOUR_WHITE);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.placeStone(6, 5, Grid.COLOUR_WHITE);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.getStone(5, 2);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -229,7 +232,7 @@ class GridTest {
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
            assertFalse(grid.areFieldsAdjacent(3,1, 0,2));
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The given x- or y-positions do not exist in a nine men's morris game. There is no field at this position.", thrown.getMessage());
         System.out.println(thrown.getMessage());
@@ -239,7 +242,7 @@ class GridTest {
     void moveStoneToAdjacentField() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
             grid.moveStoneToAdjacentField(5,3,4,2);
-        }, "IllegalMoveException was expected");
+        }, "backend.IllegalMoveException was expected");
 
         Assertions.assertEquals("The fields are not adjacent to each other.", thrown.getMessage());
         System.out.println(thrown.getMessage());
