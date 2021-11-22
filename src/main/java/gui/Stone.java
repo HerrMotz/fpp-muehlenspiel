@@ -4,35 +4,19 @@ import backend.Grid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 
 public class Stone {
     private final ImageIcon icon;
     private Point currentPoint;
     private Point previousPoint;
 
-    private class ClickListener extends MouseAdapter {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
-            previousPoint = e.getPoint();
-        }
-    }
+    private Point dragStartPoint;
+    private boolean isBeingDragged = false;
 
-    private class DragListener extends MouseMotionAdapter {
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            Point dragEndPoint = e.getPoint();
-            currentPoint.translate(
-                    (int)(dragEndPoint.getX() - previousPoint.getX()),
-                    (int)(dragEndPoint.getY() - previousPoint.getY())
-            );
-        }
-    }
+    private final boolean colour;
 
     public Stone(boolean colour, int xPos, int yPos) {
+        this.colour = colour;
         if (colour == Grid.COLOUR_WHITE) {
             icon = new ImageIcon("resources/whiteStone60x60.png");
         } else {
@@ -40,6 +24,30 @@ public class Stone {
         }
 
         currentPoint = new Point(xPos, yPos);
+    }
+
+    public boolean contains(Point point) {
+        Point bottomRightPoint = new Point(
+                (int)(currentPoint.getX() + getIcon().getIconWidth()),
+                (int)currentPoint.getY() + getIcon().getIconHeight()
+        );
+
+        return point.getX() >= currentPoint.getX() &&
+                point.getY() >= currentPoint.getY() &&
+                point.getX() <= bottomRightPoint.getX() &&
+                point.getY() <= bottomRightPoint.getY();
+    }
+
+    public void moveToTopLeftCorner(int xPos, int yPos) {
+        this.getCurrentPoint().translate(
+                (int)(xPos - this.getPreviousPoint().getX()),
+                (int)(yPos - this.getPreviousPoint().getY())
+        );
+        this.setPreviousPoint(this.getCurrentPoint());
+    }
+
+    public void moveToCenter(int xPos, int yPos) {
+        moveToTopLeftCorner(xPos - this.getStoneWidth()/2, yPos - this.getStoneHeight()/2);
     }
 
     public boolean hasBeenDragged() {
@@ -58,11 +66,35 @@ public class Stone {
         return previousPoint;
     }
 
+    public void setPreviousPoint(Point previousPoint) {
+        this.previousPoint = previousPoint;
+    }
+
     public int getStoneHeight() {
         return icon.getIconHeight();
     }
 
     public int getStoneWidth() {
         return icon.getIconWidth();
+    }
+
+    public Point getDragStartPoint() {
+        return dragStartPoint;
+    }
+
+    public void setDragStartPoint(Point dragStartPoint) {
+        this.dragStartPoint = dragStartPoint;
+    }
+
+    public boolean isBeingDragged() {
+        return isBeingDragged;
+    }
+
+    public void setBeingDragged(boolean beingDragged) {
+        isBeingDragged = beingDragged;
+    }
+
+    public boolean getColour() {
+        return colour;
     }
 }

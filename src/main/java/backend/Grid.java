@@ -30,7 +30,7 @@ public class Grid {
      * @throws IllegalArgumentException If the position is invalid on the grid
      * @throws ArrayIndexOutOfBoundsException If the position is out of bounds for the grid
      */
-    private void checkValidityOfFieldPosition(int posX, int posY) throws IllegalMoveException {
+    public void checkValidityOfFieldPosition(int posX, int posY) throws IllegalMoveException {
         if (posX >= LIMIT_X || posY >= LIMIT_Y || posX < 0 || posY < 0) {
             throw new IllegalMoveException("The given x- or y-positions do not exist in a nine men's morris game. A grid is 7x7 and the given values are out of bounds.");
         }

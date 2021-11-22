@@ -36,7 +36,10 @@ public class Game {
 
     private void checkTurns(boolean moveByColour) throws IllegalMoveException {
         if (moveByColour == lastMoveByColour) throw new IllegalMoveException("It's the other player's turn.");
-        else lastMoveByColour = moveByColour;
+    }
+
+    private void changeTurns(boolean moveByColour) {
+        lastMoveByColour = moveByColour;
     }
 
     public void placeStone(int posX, int posY, boolean colour) throws IllegalMoveException {
@@ -49,6 +52,7 @@ public class Game {
         if (getStonesInInventory(colour) > 0) {
             grid.placeStone(posX, posY, colour);
             takeStoneFromInventory(colour);
+            changeTurns(colour);
 
             if (colour == Grid.COLOUR_BLACK && blackStoneCounter == 0) {
                 currentPhase = MOVE_PHASE;
@@ -69,13 +73,40 @@ public class Game {
                     Boolean stone = grid.getStone(posX, posY);
                     checkTurns(stone);
                     grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
+                    changeTurns(stone);
                 }
             }
         } else {
             Boolean stone = grid.getStone(posX, posY);
             checkTurns(stone);
             grid.jumpStone(posX, posY, toPosX, toPosY);
+            changeTurns(stone);
         }
+    }
+
+    public int getLimitX() {
+        return grid.LIMIT_X;
+    }
+
+    public int getLimitY() {
+        return grid.LIMIT_Y;
+    }
+
+    public void checkValidityOfFieldPosition(int posX, int posY) throws IllegalMoveException {
+        grid.checkValidityOfFieldPosition(posX, posY);
+    }
+
+    public String getCurrentPlayer() {
+        return lastMoveByColour ? "Black" : "White";
+    }
+
+    public String getPhase() {
+        return switch (currentPhase) {
+            case PLACE_PHASE -> "Place Phase";
+            case MOVE_PHASE -> "Move Phase";
+            case JUMP_PHASE -> "Jump Phase";
+            default -> throw new IllegalStateException("Unexpected value: " + currentPhase);
+        };
     }
 
     @Override
