@@ -1,7 +1,10 @@
 package backend;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Game {
-    private Grid grid = new Grid(7, 7);
+    private final Grid grid = new Grid(7, 7);
     public static final int PLACE_PHASE = 0;
     public static final int MOVE_PHASE = 1;
     public static final int JUMP_PHASE = 2;
@@ -42,19 +45,19 @@ public class Game {
         lastMoveByColour = moveByColour;
     }
 
-    public void placeStone(int posX, int posY, boolean colour) throws IllegalMoveException {
+    public void placeStone(int posX, int posY, Stone stone) throws IllegalMoveException {
         if (currentPhase != PLACE_PHASE) {
             throw new IllegalMoveException("The game is currently not in the place phase.");
         }
 
-        checkTurns(colour);
+        checkTurns(stone.getColour());
 
-        if (getStonesInInventory(colour) > 0) {
-            grid.placeStone(posX, posY, colour);
-            takeStoneFromInventory(colour);
-            changeTurns(colour);
+        if (getStonesInInventory(stone.getColour()) > 0) {
+            grid.placeStone(posX, posY, stone);
+            takeStoneFromInventory(stone.getColour());
+            changeTurns(stone.getColour());
 
-            if (colour == Grid.COLOUR_BLACK && blackStoneCounter == 0) {
+            if (stone.getColour() == Grid.COLOUR_BLACK && blackStoneCounter == 0) {
                 currentPhase = MOVE_PHASE;
             }
         } else {
@@ -70,17 +73,18 @@ public class Game {
                 if (!grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
                     throw new IllegalMoveException("The fields are not adjacent to each other.");
                 } else {
-                    Boolean stone = grid.getStone(posX, posY);
-                    checkTurns(stone);
+                    Field field = grid.getField(posX, posY);
+                    boolean colour = field.getStone().getColour();
+                    checkTurns(colour);
                     grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
-                    changeTurns(stone);
+                    changeTurns(colour);
                 }
             }
         } else {
-            Boolean stone = grid.getStone(posX, posY);
-            checkTurns(stone);
+            Field field = grid.getField(posX, posY);
+            checkTurns(field.getStone().getColour());
             grid.jumpStone(posX, posY, toPosX, toPosY);
-            changeTurns(stone);
+            changeTurns(field.getStone().getColour());
         }
     }
 
@@ -107,6 +111,60 @@ public class Game {
             case JUMP_PHASE -> "Jump Phase";
             default -> throw new IllegalStateException("Unexpected value: " + currentPhase);
         };
+    }
+
+    public boolean checkMill(int posX, int posY) {
+        Field field;
+        try {
+            field = grid.getField(posX, posY);
+        } catch (IllegalMoveException e) {
+            return false;
+        }
+
+        if (field.getStone() == null) return false;
+
+        Set<Field> adjFields;
+        try {
+            adjFields = grid.getAdjacentFields(posX, posY);
+        } catch (IllegalMoveException e) {
+            return false;
+        }
+
+        int countAdjacentFields = 0;
+
+        for (Field adjField : adjFields) {
+            if (!adjField.empty() && adjField.getStone().getColour() == field.getStone().getColour()) {
+                int xDirection = (field.getPosX() - adjField.getPosX()) % 2;
+                int yDirection = (field.getPosY() - adjField.getPosY()) % 2;
+
+                try {
+                    Set<Field> adj2Fields = grid.getAdjacentFields(field.getPosX(), field.getPosY());
+                    for (Field adj2Field : adj2Fields) {
+                        int x2Direction = (field.getPosX() - adj2Field.getPosX()) % 2;
+                        int y2Direction = (field.getPosY() - adj2Field.getPosY()) % 2;
+                        if (xDirection == x2Direction || yDirection == y2Direction) {
+                            Set<Field> adj3Fields = grid.getAdjacentFields(field.getPosX(), field.getPosY());
+                            for (Field adj3Field : adj3Fields) {
+                                int x3Direction = (field.getPosX() - adj3Field.getPosX()) % 2;
+                                int y3Direction = (field.getPosY() - adj3Field.getPosY()) % 2;
+                                if (xDirection == x3Direction || yDirection == y3Direction) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                } catch (IllegalMoveException e) {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isStoneLegalToRemove(int posX, int posY) {
+
+        return false;
     }
 
     @Override

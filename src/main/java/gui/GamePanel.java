@@ -43,8 +43,6 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        System.out.println(validPositions);
-
         allStones.addAll(blackStones);
         allStones.addAll(whiteStones);
 
@@ -97,7 +95,7 @@ public class GamePanel extends JPanel implements ActionListener {
                         );
                         if (distance <= dropZoneRadius) {
                             try {
-                                game.placeStone(validPosition.getGridX(), validPosition.getGridY(), stone.getColour());
+                                game.placeStone(validPosition.getGridX(), validPosition.getGridY(), new backend.Stone(stone.getColour()));
                                 currentlyClickedStone.moveToCenter((int)validPosition.getX(), (int)validPosition.getY());
                                 repaint();
                                 moveableStones.remove(currentlyClickedStone);

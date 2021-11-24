@@ -1,6 +1,7 @@
 import backend.Game;
 import backend.Grid;
 import backend.IllegalMoveException;
+import backend.Stone;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,31 +19,31 @@ public class GameTest {
     @Test
     void firstMove() {
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            game.placeStone(6, 6, Grid.COLOUR_BLACK);
+            game.placeStone(6, 6, new Stone(Grid.COLOUR_BLACK));
         }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
 
         try {
-            game.placeStone(6, 6, Grid.COLOUR_WHITE);
+            game.placeStone(6, 6, new Stone(Grid.COLOUR_WHITE));
         } catch (IllegalMoveException e) {
             fail("No exception expected, but got backend.IllegalMoveException");
         }
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            game.placeStone(0, 0, Grid.COLOUR_WHITE);
+            game.placeStone(0, 0, new Stone(Grid.COLOUR_WHITE));
         }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
     }
 
     void makeSomeMoves1() {
         try {
-            game.placeStone(0, 0, Grid.COLOUR_WHITE);
-            game.placeStone(1, 1, Grid.COLOUR_BLACK);
-            game.placeStone(2, 2, Grid.COLOUR_WHITE);
-            game.placeStone(0, 3, Grid.COLOUR_BLACK);
-            game.placeStone(1, 3, Grid.COLOUR_WHITE);
-            game.placeStone(2, 3, Grid.COLOUR_BLACK);
-            game.placeStone(4, 3, Grid.COLOUR_WHITE);
+            game.placeStone(0, 0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1, 1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(2, 2, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(0, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(1, 3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(2, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(4, 3, new Stone(Grid.COLOUR_WHITE));
         } catch (IllegalMoveException e) {
             fail("No exception expected, but got backend.IllegalMoveException");
         }
@@ -50,11 +51,11 @@ public class GameTest {
 
     void makeSomeMoves2() {
         try {
-            game.placeStone(0, 6, Grid.COLOUR_BLACK);
-            game.placeStone(1, 5, Grid.COLOUR_WHITE);
-            game.placeStone(3, 6, Grid.COLOUR_BLACK);
-            game.placeStone(3, 4, Grid.COLOUR_WHITE);
-            game.placeStone(5, 3, Grid.COLOUR_BLACK);
+            game.placeStone(0, 6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(1, 5, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3, 4, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(5, 3, new Stone(Grid.COLOUR_BLACK));
         } catch (IllegalMoveException e) {
             fail("No exception expected, but got backend.IllegalMoveException");
         }
@@ -62,12 +63,12 @@ public class GameTest {
 
     void makeSomeMoves3() {
         try {
-            game.placeStone(3, 0, Grid.COLOUR_WHITE);
-            game.placeStone(6, 0, Grid.COLOUR_BLACK);
-            game.placeStone(5, 1, Grid.COLOUR_WHITE);
-            game.placeStone(4, 2, Grid.COLOUR_BLACK);
-            game.placeStone(4, 4, Grid.COLOUR_WHITE);
-            game.placeStone(6, 6, Grid.COLOUR_BLACK);
+            game.placeStone(3, 0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(6, 0, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(5, 1, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(4, 2, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(4, 4, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(6, 6, new Stone(Grid.COLOUR_BLACK));
         } catch (IllegalMoveException e) {
             fail("No exception expected, but got backend.IllegalMoveException");
         }
@@ -80,7 +81,7 @@ public class GameTest {
         assertEquals(5, game.getStonesInInventory(Grid.COLOUR_WHITE));
 
         IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            game.placeStone(6, 6, Grid.COLOUR_WHITE);
+            game.placeStone(6, 6, new Stone(Grid.COLOUR_WHITE));
         }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("It's the other player's turn.", thrown.getMessage());
 
@@ -99,7 +100,7 @@ public class GameTest {
         assertEquals(0, game.getStonesInInventory(Grid.COLOUR_BLACK));
 
         thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
-            game.placeStone(3, 1, Grid.COLOUR_BLACK);
+            game.placeStone(3, 1, new Stone(Grid.COLOUR_BLACK));
         }, "backend.IllegalMoveException was expected");
         Assertions.assertEquals("The game is currently not in the place phase.", thrown.getMessage());
     }
@@ -130,5 +131,23 @@ public class GameTest {
         }
 
         System.out.println(game);
+    }
+
+    @Test
+    void checkMill() {
+        try {
+            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1,1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(0,6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+
+        assertTrue(game.checkMill(0,0));
+        assertTrue(game.checkMill(3, 0));
+        assertTrue(game.checkMill(6, 0));
+        assertFalse(game.checkMill(0, 3));
     }
 }
