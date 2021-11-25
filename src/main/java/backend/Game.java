@@ -93,6 +93,25 @@ public class Game {
         }
     }
 
+    public boolean doesColorHavePossibleMoves(boolean colour) {
+        for (int y = 0; y < grid.LIMIT_Y; y++) {
+            for (int x = 0; x < grid.LIMIT_X; x++) {
+                try {
+                    Field field = grid.getField(x, y);
+                    if (!field.isEmpty() && field.getStone().getColour() == colour) {
+                        Set<Field> adjacentFields = grid.getAdjacentFields(x, y);
+                        for (Field adjacentField : adjacentFields) {
+                            if (adjacentField.isEmpty()) {
+                                return true;
+                            }
+                        }
+                    }
+                } catch (IllegalMoveException ignored) {}
+            }
+        }
+        return false;
+    }
+
     public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone "+ this.getCurrentPlayer() +" before you can make another move.");
@@ -103,6 +122,11 @@ public class Game {
         boolean colour = field.getStone().getColour();
 
         checkTurns(colour);
+
+        if (!doesColorHavePossibleMoves(colour)) {
+            currentPhase = GAME_OVER;
+            return;
+        }
 
         if (whiteInJumpPhase && field.getStone().getColour() == Grid.COLOUR_WHITE
                 || blackInJumpPhase && field.getStone().getColour() == Grid.COLOUR_BLACK) {
