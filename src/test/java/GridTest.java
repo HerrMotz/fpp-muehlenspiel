@@ -12,7 +12,7 @@ class GridTest {
     Grid grid;
     @BeforeEach
     void setup() {
-        grid = new Grid(7, 7);
+        grid = new Grid();
     }
 
     @Test
@@ -136,8 +136,8 @@ class GridTest {
     @Test
     void getField() {
         Field[][] result = grid.getGrid();
-        for (int i = 0; i < grid.LIMIT_X; i++) {
-            for (int j = 0; j < grid.LIMIT_Y; j++) {
+        for (int i = 0; i < Grid.LIMIT_X; i++) {
+            for (int j = 0; j < Grid.LIMIT_Y; j++) {
                 assertTrue(result[i][j].isEmpty());
             }
         }

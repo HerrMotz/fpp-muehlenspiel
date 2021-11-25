@@ -1,24 +1,19 @@
 package backend;
 
 import java.util.HashSet;
-import java.util.Set;
 
 public class Grid {
     public static final boolean COLOUR_BLACK = false;
     public static final boolean COLOUR_WHITE = true;
 
+    public static final int LIMIT_X = 7;
+    public static final int LIMIT_Y = 7;
+
+    private final Field[][] grid;
+
     private final HashSet<HashSet<Field>> possibleMills = new HashSet<>();
 
-    public final int LIMIT_X;
-    public final int LIMIT_Y;
-
-    @SuppressWarnings("FieldMayBeFinal")
-    private Field[][] grid;
-
-    public Grid(int limitX, int limitY) {
-        LIMIT_X = limitX;
-        LIMIT_Y = limitY;
-
+    public Grid() {
         grid = new Field[LIMIT_Y][LIMIT_X];
 
         for (int y = 0; y < LIMIT_Y; y++) {
@@ -58,6 +53,13 @@ public class Grid {
         }
     }
 
+    /**
+     * Helper function to reduce duplicate code.
+     * @param two Two consecutive adjacent fields (so two fields that are adjacent)
+     * @param x x-position of the start field (from which the other two fields were discovered)
+     * @param y y-position of the start field
+     * @throws IllegalMoveException Should there be no field at the given x and y coordinates
+     */
     private void helperGenerateMills(HashSet<Field> two, int x, int y) throws IllegalMoveException {
         if (two != null) {
             two.add(getField(x, y));
@@ -65,10 +67,19 @@ public class Grid {
         }
     }
 
+    /**
+     * Populate class property possibleMills with all possible mills on the play field.
+     * Loops through all fields, which are on a diagonal from top left to bottom right.
+     *
+     * TODO This function needs to be reworked, because it is hideous.
+     *
+     * @throws IllegalMoveException Should helperGenerateMills throw an exception.
+     */
     public void generateMills() throws IllegalMoveException {
         for (int y = 0; y < LIMIT_Y; y++) {
             for (int x = 0; x < LIMIT_X; x++) {
                 if ((x == y && x != 3) || (x==2 && y==3) || (x==3 && y==4) || (x==4 && y==3) || (x==3 && y==2)) {
+
                     HashSet<Field> two = getTwoConsecutiveAdjacentFields(x, LIMIT_X, 1, y, true);
                     helperGenerateMills(two, x, y);
 
@@ -89,10 +100,20 @@ public class Grid {
         return possibleMills;
     }
 
+    /**
+     * Going from the start field, this function discovers two fields, which are adjacent to each other and in "one line" with the start field.
+     * @param moveCoordinate The variable coordinate of the start field
+     * @param limitMoveCoordinate The limit of the variable coordinate
+     * @param step The direction we are going into
+     * @param fixCoordinate The constant coordinate of the start field
+     * @param xComesFirst Swaps x and y position, because moveCoordinate as well as fixCoordinate may be x or y.
+     * @return Two consecutive adjacent fields for the start field.
+     */
     public HashSet<Field> getTwoConsecutiveAdjacentFields(int moveCoordinate, int limitMoveCoordinate, int step, int fixCoordinate, boolean xComesFirst) {
         Field field = getAdjacentFieldsLoop(moveCoordinate, limitMoveCoordinate, step, fixCoordinate, xComesFirst);
         if (field != null) {
             Field field2;
+
             if (xComesFirst)
                 field2 = getAdjacentFieldsLoop(field.getPosX(), LIMIT_X, step, field.getPosY(), true);
             else
@@ -138,7 +159,7 @@ public class Grid {
      * @return a set of adjacent fields
      * @throws IllegalMoveException should the given coordinates of the field be invalid
      */
-    public Set<Field> getAdjacentFields(int posX, int posY) throws IllegalMoveException {
+    public HashSet<Field> getAdjacentFields(int posX, int posY) throws IllegalMoveException {
         checkValidityOfFieldPosition(posX, posY);
 
         // TODO Redo this in a mathematically pleasing way
@@ -167,7 +188,7 @@ public class Grid {
         checkValidityOfFieldPosition(posX, posY);
         checkValidityOfFieldPosition(posX2, posY2);
 
-        Set<Field> adjacentFields = getAdjacentFields(posX, posY);
+        HashSet<Field> adjacentFields = getAdjacentFields(posX, posY);
         Field pos2 = getField(posX2, posY2);
 
         return adjacentFields.contains(pos2);

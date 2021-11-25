@@ -1,15 +1,14 @@
 package backend;
 
-import java.util.Set;
+import java.util.HashSet;
 
 public class Game {
-    private final Grid grid = new Grid(7, 7);
+    private final Grid grid = new Grid();
     public static final int PLACE_PHASE = 0;
     public static final int MOVE_PHASE = 1;
     public static final int JUMP_PHASE = 2;
     public static final int GAME_OVER = 3;
 
-    @SuppressWarnings("FieldMayBeFinal")
     private int currentPhase = PLACE_PHASE;
 
     private boolean firstMoveByColour = Grid.COLOUR_BLACK;
@@ -36,20 +35,18 @@ public class Game {
         throw new IllegalArgumentException("The given colour does not exist");
     }
 
-    private boolean takeStoneFromInventory(boolean colour) {
+    private void takeStoneFromInventory(boolean colour) {
         if (colour == Grid.COLOUR_WHITE && whiteStonesInInventory > 0) {
             whiteStonesInInventory--;
             whiteStonesOnTheGrid++;
-            return true;
+            return;
         }
 
         if (colour == Grid.COLOUR_BLACK && blackStonesInInventory > 0) {
             blackStonesInInventory--;
             blackStonesOnTheGrid++;
-            return true;
         }
 
-        return false;
     }
 
     private void checkTurns(boolean moveByColour) throws IllegalMoveException {
@@ -93,12 +90,12 @@ public class Game {
     }
 
     public boolean doesColorHavePossibleMoves(boolean colour) {
-        for (int y = 0; y < grid.LIMIT_Y; y++) {
-            for (int x = 0; x < grid.LIMIT_X; x++) {
+        for (int y = 0; y < Grid.LIMIT_Y; y++) {
+            for (int x = 0; x < Grid.LIMIT_X; x++) {
                 try {
                     Field field = grid.getField(x, y);
                     if (!field.isEmpty() && field.getStone().getColour() == colour) {
-                        Set<Field> adjacentFields = grid.getAdjacentFields(x, y);
+                        HashSet<Field> adjacentFields = grid.getAdjacentFields(x, y);
                         for (Field adjacentField : adjacentFields) {
                             if (adjacentField.isEmpty()) {
                                 return true;
@@ -112,8 +109,8 @@ public class Game {
     }
 
     public boolean areAllStonesInAMill(boolean colour) {
-        for (int y = 0; y < grid.LIMIT_Y; y++) {
-            for (int x = 0; x < grid.LIMIT_X; x++) {
+        for (int y = 0; y < Grid.LIMIT_Y; y++) {
+            for (int x = 0; x < Grid.LIMIT_X; x++) {
                 try {
                     Field field = grid.getField(x, y);
                     if (!field.isEmpty() && field.getStone().getColour() == colour) {
@@ -206,11 +203,11 @@ public class Game {
     }
 
     public int getLimitX() {
-        return grid.LIMIT_X;
+        return Grid.LIMIT_X;
     }
 
     public int getLimitY() {
-        return grid.LIMIT_Y;
+        return Grid.LIMIT_Y;
     }
 
     public void checkValidityOfFieldPosition(int posX, int posY) throws IllegalMoveException {
@@ -249,7 +246,7 @@ public class Game {
 
         if (field.isEmpty()) return false;
 
-        for (Set<Field> mill : grid.getPossibleMills()) {
+        for (HashSet<Field> mill : grid.getPossibleMills()) {
             if (mill.contains(field)) {
                 boolean allTheSameColour = true;
                 for (Field millField : mill) {
@@ -274,14 +271,6 @@ public class Game {
         if (field.isEmpty()) throw new IllegalMoveException("There is no stone at the given field, which may be removed");
 
         return !isInMill(posX, posY) || areAllStonesInAMill(field.getStone().getColour());
-    }
-
-    public boolean isWhiteInJumpPhase() {
-        return whiteInJumpPhase;
-    }
-
-    public boolean isBlackInJumpPhase() {
-        return blackInJumpPhase;
     }
 
     @Override

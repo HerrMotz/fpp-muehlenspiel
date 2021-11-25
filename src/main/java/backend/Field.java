@@ -35,8 +35,6 @@ public class Field {
         return posY;
     }
 
-
-
     @Override
     public String toString() {
         return "Field{" +

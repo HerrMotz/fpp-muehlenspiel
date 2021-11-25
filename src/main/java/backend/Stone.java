@@ -14,10 +14,6 @@ public class Stone {
         return colour;
     }
 
-    public void setColour(boolean colour) {
-        this.colour = colour;
-    }
-
     @Override
     public String toString() {
         return "Stone{" +
