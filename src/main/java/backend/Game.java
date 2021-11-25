@@ -25,8 +25,12 @@ public class Game {
     private boolean whiteInJumpPhase = false;
     private boolean blackInJumpPhase = false;
 
-    public Game() throws IllegalMoveException {
+    public Game(boolean random, double x) throws IllegalMoveException {
         grid.generateMills();
+        if (random) {
+            firstMoveByColour = (Math.random() < x);
+            lastMoveByColour = firstMoveByColour;
+        }
     }
 
     public int getStonesInInventory(boolean colour) {

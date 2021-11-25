@@ -28,7 +28,7 @@ public class GamePanel extends JPanel implements ActionListener {
         super();
 
         try {
-            game = new Game();
+            game = new Game(true, 0.5);
         } catch (IllegalMoveException ignored) {
             return;
         }
@@ -161,6 +161,7 @@ public class GamePanel extends JPanel implements ActionListener {
                             return;
                         }
                     }
+                    // hier liegt der Fehler
                     currentlyClickedStone.moveToTopLeftCorner((int) stone.getDragStartPoint().getX(), (int) stone.getDragStartPoint().getY());
                     stone.setBeingDragged(false);
                     repaint();

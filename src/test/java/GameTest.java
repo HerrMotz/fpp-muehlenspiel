@@ -14,7 +14,7 @@ public class GameTest {
     @BeforeEach
     void setup() {
         try {
-            game = new Game();
+            game = new Game(false, 0);
         } catch (IllegalMoveException ignored) {}
     }
 
