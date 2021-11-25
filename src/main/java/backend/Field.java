@@ -1,7 +1,5 @@
 package backend;
 
-import java.util.Objects;
-
 public class Field {
     private Stone stone;
     private final int posX;
@@ -25,7 +23,7 @@ public class Field {
         this.stone = null;
     }
 
-    public boolean empty() {
+    public boolean isEmpty() {
         return stone == null;
     }
 
@@ -37,16 +35,14 @@ public class Field {
         return posY;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Field field = (Field) o;
-        return posX == field.posX && posY == field.posY && Objects.equals(getStone(), field.getStone());
-    }
+
 
     @Override
-    public int hashCode() {
-        return Objects.hash(getStone(), posX, posY);
+    public String toString() {
+        return "Field{" +
+                "stone=" + stone +
+                ", posX=" + posX +
+                ", posY=" + posY +
+                '}';
     }
 }

@@ -138,7 +138,7 @@ class GridTest {
         Field[][] result = grid.getGrid();
         for (int i = 0; i < grid.LIMIT_X; i++) {
             for (int j = 0; j < grid.LIMIT_Y; j++) {
-                assertTrue(result[i][j].empty());
+                assertTrue(result[i][j].isEmpty());
             }
         }
 
@@ -192,13 +192,37 @@ class GridTest {
 
     @Test
     void getAdjacentFields() {
-        for (int i = 0; i < grid.LIMIT_X; i++) {
-            for (int j = 0; j < grid.LIMIT_Y; j++) {
-                try {
-                    Set<Field> adjacentFields = grid.getAdjacentFields(i, j);
-                    System.out.println("("+i+","+j+"): " + adjacentFields.toString());
-                } catch (IllegalMoveException ignored) {}
-            }
+        Set<Field> adjacentFields;
+
+        try {
+            grid.placeStone(1, 3, new Stone(Grid.COLOUR_WHITE));
+            grid.placeStone(1, 5, new Stone(Grid.COLOUR_BLACK));
+            grid.placeStone(2, 3, new Stone(Grid.COLOUR_WHITE));
+            grid.placeStone(0, 3, new Stone(Grid.COLOUR_BLACK));
+            grid.placeStone(1, 1, new Stone(Grid.COLOUR_WHITE));
+
+            adjacentFields = grid.getAdjacentFields(1, 3);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+            return;
+        }
+
+        try {
+            assertTrue(adjacentFields.contains(grid.getField(2, 3)));
+            assertTrue(adjacentFields.contains(grid.getField(1, 5)));
+            assertTrue(adjacentFields.contains(grid.getField(0, 3)));
+            assertTrue(adjacentFields.contains(grid.getField(1, 1)));
+
+            adjacentFields = grid.getAdjacentFields(1, 1);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+            return;
+        }
+
+        try {
+            assertTrue(adjacentFields.contains(grid.getField(1, 3)));
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
         }
     }
 
@@ -224,6 +248,13 @@ class GridTest {
 
         try {
             assertFalse(grid.areFieldsAdjacent(1, 1, 2, 2));
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+
+        // Test if the center is avoided
+        try {
+            assertFalse(grid.areFieldsAdjacent(4,3, 2,3));
         } catch (IllegalMoveException e) {
             fail("Expected no exception, got: " + e.getMessage());
         }
@@ -262,5 +293,16 @@ class GridTest {
         } catch (IllegalMoveException e) {
             fail("Expected no exception, got: " + e.getMessage());
         }
+    }
+
+    @Test
+    void getTwoConsecutiveFields() {
+        try {
+            grid.generateMills();
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+        System.out.println(grid.getPossibleMills().size());
+        System.out.println(grid.getPossibleMills());
     }
 }

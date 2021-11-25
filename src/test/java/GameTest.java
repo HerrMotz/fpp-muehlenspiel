@@ -13,7 +13,9 @@ public class GameTest {
     Game game;
     @BeforeEach
     void setup() {
-        game = new Game();
+        try {
+            game = new Game();
+        } catch (IllegalMoveException ignored) {}
     }
 
     @Test
@@ -68,7 +70,7 @@ public class GameTest {
             game.placeStone(5, 1, new Stone(Grid.COLOUR_WHITE));
             game.placeStone(4, 2, new Stone(Grid.COLOUR_BLACK));
             game.placeStone(4, 4, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(6, 6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(5, 5, new Stone(Grid.COLOUR_BLACK));
         } catch (IllegalMoveException e) {
             fail("No exception expected, but got backend.IllegalMoveException");
         }
@@ -145,9 +147,91 @@ public class GameTest {
             fail("Expected no exception, got: " + e.getMessage());
         }
 
-        assertTrue(game.checkMill(0,0));
-        assertTrue(game.checkMill(3, 0));
-        assertTrue(game.checkMill(6, 0));
-        assertFalse(game.checkMill(0, 3));
+        assertTrue(
+                game.isInMill(0,0)
+        );
+        assertTrue(game.isInMill(3, 0));
+        assertTrue(game.isInMill(6, 0));
+        assertFalse(game.isInMill(1, 1));
+        assertFalse(game.isInMill(0, 6));
+    }
+
+    @Test
+    void checkMill2() {
+        try {
+            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1,1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3,6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
+            game.removeStone(3,6);
+            game.placeStone(6,6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(0,3, new Stone(Grid.COLOUR_WHITE));
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+        System.out.println(game);
+        assertTrue(game.isInMill(6, 0));
+        assertFalse(game.isInMill(0, 3));
+    }
+
+    @Test
+    void legalRemoval() {
+        try {
+            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1, 1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
+            game.removeStone(1,1);
+            game.placeStone(1,1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(0, 3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(5, 1, new Stone(Grid.COLOUR_BLACK));
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+
+        System.out.println(game);
+
+        IllegalMoveException thrown = Assertions.assertThrows(IllegalMoveException.class, () -> {
+            game.removeStone(3,0);
+            System.out.println(game);
+        }, "backend.IllegalMoveException was expected");
+        Assertions.assertEquals("This stone may not be removed.", thrown.getMessage());
+    }
+
+    @Test
+    void moveStoneAndCheckMill() {
+        try {
+            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1, 1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
+            game.removeStone(1,1);
+            game.placeStone(1,1, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(0, 3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(5, 1, new Stone(Grid.COLOUR_BLACK));
+            game.removeStone(0,3);
+            game.placeStone(0,3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(0,6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(2,3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(1,3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(1,5, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(5,5, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(4,3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(6,3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,4, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(6,6, new Stone(Grid.COLOUR_BLACK));
+
+            game.moveStone(2,3, 2,4);
+            System.out.println(game);
+            assertFalse(game.isThereAMill());
+            game.moveStone(6,3, 5,3);
+            assertTrue(game.isThereAMill());
+            System.out.println(game);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
     }
 }

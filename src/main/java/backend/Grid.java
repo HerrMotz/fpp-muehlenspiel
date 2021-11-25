@@ -7,6 +7,8 @@ public class Grid {
     public static final boolean COLOUR_BLACK = false;
     public static final boolean COLOUR_WHITE = true;
 
+    private final HashSet<HashSet<Field>> possibleMills = new HashSet<>();
+
     public final int LIMIT_X;
     public final int LIMIT_Y;
 
@@ -56,6 +58,56 @@ public class Grid {
         }
     }
 
+    private void helperGenerateMills(HashSet<Field> two, int x, int y) throws IllegalMoveException {
+        if (two != null) {
+            two.add(getField(x, y));
+            possibleMills.add(two);
+        }
+    }
+
+    public void generateMills() throws IllegalMoveException {
+        for (int y = 0; y < LIMIT_Y; y++) {
+            for (int x = 0; x < LIMIT_X; x++) {
+                if ((x == y && x != 3) || (x==2 && y==3) || (x==3 && y==4) || (x==4 && y==3) || (x==3 && y==2)) {
+                    HashSet<Field> two = getTwoConsecutiveAdjacentFields(x, LIMIT_X, 1, y, true);
+                    helperGenerateMills(two, x, y);
+
+                    two = getTwoConsecutiveAdjacentFields(x, LIMIT_X, -1, y, true);
+                    helperGenerateMills(two, x, y);
+
+                    two = getTwoConsecutiveAdjacentFields(y, LIMIT_Y, 1, x, false);
+                    helperGenerateMills(two, x, y);
+
+                    two = getTwoConsecutiveAdjacentFields(y, LIMIT_Y, -1, x, false);
+                    helperGenerateMills(two, x, y);
+                }
+            }
+        }
+    }
+
+    public HashSet<HashSet<Field>> getPossibleMills() {
+        return possibleMills;
+    }
+
+    public HashSet<Field> getTwoConsecutiveAdjacentFields(int moveCoordinate, int limitMoveCoordinate, int step, int fixCoordinate, boolean xComesFirst) {
+        Field field = getAdjacentFieldsLoop(moveCoordinate, limitMoveCoordinate, step, fixCoordinate, xComesFirst);
+        if (field != null) {
+            Field field2;
+            if (xComesFirst)
+                field2 = getAdjacentFieldsLoop(field.getPosX(), LIMIT_X, step, field.getPosY(), true);
+            else
+                field2 = getAdjacentFieldsLoop(field.getPosY(), LIMIT_Y, step, field.getPosX(), false);
+
+            if (field2 != null) {
+                return new HashSet<>() {{
+                    add(field);
+                    add(field2);
+                }};
+            }
+        }
+        return null;
+    }
+
     /**
      * Helper Function for getting all adjacent fields
      * @param moveCoordinate The coordinate which we move along to find adjacent fields
@@ -69,6 +121,7 @@ public class Grid {
         while (moveCoordinate < limitMoveCoordinate && moveCoordinate >= 0) {
             moveCoordinate = moveCoordinate + step;
             try {
+                if (fixCoordinate == 3 && moveCoordinate == 3) break;
                 checkValidityOfFieldPosition(moveCoordinate, fixCoordinate);
                 if (xComesFirst) return getField(moveCoordinate, fixCoordinate);
                 else return getField(fixCoordinate, moveCoordinate);
@@ -115,7 +168,7 @@ public class Grid {
         checkValidityOfFieldPosition(posX2, posY2);
 
         Set<Field> adjacentFields = getAdjacentFields(posX, posY);
-        Field pos2 = new Field(posX2, posY2);
+        Field pos2 = getField(posX2, posY2);
 
         return adjacentFields.contains(pos2);
     }
@@ -147,7 +200,7 @@ public class Grid {
      */
     public void removeStone(int posX, int posY) throws IllegalMoveException {
         Field field = getField(posX, posY);
-        if (field.empty()) throw new IllegalMoveException("There is no stone at the given field.");
+        if (field.isEmpty()) throw new IllegalMoveException("There is no stone at the given field.");
         grid[posY][posX].removeStone();
     }
 
@@ -165,7 +218,7 @@ public class Grid {
     public void placeStone(int posX, int posY, Stone stone) throws IllegalMoveException {
         checkValidityOfFieldPosition(posX, posY);
 
-        if (!getField(posX, posY).empty()) {
+        if (!getField(posX, posY).isEmpty()) {
             throw new IllegalMoveException("There already is a stone at this position.");
         }
         grid[posY][posX].setStone(stone);
@@ -187,14 +240,14 @@ public class Grid {
             throw new IllegalMoveException("A move to the same field is not allowed.");
 
         Field field = getField(posX, posY);
-        if (field.empty())
+        if (field.isEmpty())
             throw new IllegalMoveException("You may only move stones, so please choose a not empty field.");
 
         Field toField = getField(toPosX, toPosY);
-       if (!toField.empty())
+       if (!toField.isEmpty())
             throw new IllegalMoveException("You may only move stones to empty fields.");
 
-       Stone stone = new Stone(field.getStone().getColour());
+       Stone stone = field.getStone();
 
         removeStone(posX, posY);
         placeStone(toPosX, toPosY, stone);
@@ -225,7 +278,7 @@ public class Grid {
                 try {
                     Field field = getField(x, y);
                     String m = " ";
-                    if (field.empty()) m = "o";
+                    if (field.isEmpty()) m = "o";
                     else if (field.getStone().getColour() == COLOUR_BLACK) m = "B";
                     else if (field.getStone().getColour() == COLOUR_WHITE) m = "W";
                     stringBuilder.append(m).append(" ");

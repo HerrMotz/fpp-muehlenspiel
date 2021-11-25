@@ -15,6 +15,9 @@ public class Stone {
 
     private final boolean colour;
 
+    private int gridPosX;
+    private int gridPosY;
+
     public Stone(boolean colour, int xPos, int yPos) {
         this.colour = colour;
         if (colour == Grid.COLOUR_WHITE) {
@@ -96,5 +99,21 @@ public class Stone {
 
     public boolean getColour() {
         return colour;
+    }
+
+    public int getGridPosX() {
+        return gridPosX;
+    }
+
+    public void setGridPosX(int gridPosX) {
+        this.gridPosX = gridPosX;
+    }
+
+    public int getGridPosY() {
+        return gridPosY;
+    }
+
+    public void setGridPosY(int gridPosY) {
+        this.gridPosY = gridPosY;
     }
 }
