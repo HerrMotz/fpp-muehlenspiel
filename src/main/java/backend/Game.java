@@ -144,7 +144,6 @@ public class Game {
                 || blackInJumpPhase && field.getStone().getColour() == Grid.COLOUR_BLACK) {
             grid.jumpStone(posX, posY, toPosX, toPosY);
             changeTurns(colour);
-            return;
 
         } else if (grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
             grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
