@@ -7,10 +7,12 @@ public class Game {
     public static final int PLACE_PHASE = 0;
     public static final int MOVE_PHASE = 1;
     public static final int JUMP_PHASE = 2;
+    public static final int GAME_OVER = 3;
 
     @SuppressWarnings("FieldMayBeFinal")
     private int currentPhase = PLACE_PHASE;
 
+    private boolean firstMoveByColour = Grid.COLOUR_BLACK;
     private boolean lastMoveByColour = Grid.COLOUR_BLACK;
 
     private boolean thereIsAMill = false;
@@ -74,7 +76,11 @@ public class Game {
             takeStoneFromInventory(stone.getColour());
             changeTurns(stone.getColour());
 
-            if (stone.getColour() == Grid.COLOUR_BLACK && blackStonesInInventory == 0) {
+            if (
+                stone.getColour() == firstMoveByColour
+                && (firstMoveByColour == Grid.COLOUR_BLACK && blackStonesInInventory == 0)
+                || (firstMoveByColour == Grid.COLOUR_WHITE && whiteStonesInInventory == 0)
+            ) {
                 currentPhase = MOVE_PHASE;
             }
 
@@ -91,29 +97,30 @@ public class Game {
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone "+ this.getCurrentPlayer() +" before you can make another move.");
         }
-        if (currentPhase != JUMP_PHASE) {
-            if (currentPhase != MOVE_PHASE) {
-                throw new IllegalMoveException("You cannot move any stones in this stage of the game");
-            } else {
-                if (!grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
-                    throw new IllegalMoveException("The fields are not adjacent to each other.");
-                } else {
-                    Field field = grid.getField(posX, posY);
-                    boolean colour = field.getStone().getColour();
-                    checkTurns(colour);
-                    grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
-                    changeTurns(colour);
-                    if (isInMill(toPosX, toPosY)) {
-                        thereIsAMill = true;
-                        System.out.println("there is a mill");
-                    }
-                }
-            }
-        } else {
-            Field field = grid.getField(posX, posY);
-            checkTurns(field.getStone().getColour());
+
+        Field field = grid.getField(posX, posY);
+
+        boolean colour = field.getStone().getColour();
+
+        checkTurns(colour);
+
+        if (whiteInJumpPhase && field.getStone().getColour() == Grid.COLOUR_WHITE
+                || blackInJumpPhase && field.getStone().getColour() == Grid.COLOUR_BLACK) {
             grid.jumpStone(posX, posY, toPosX, toPosY);
-            changeTurns(field.getStone().getColour());
+            changeTurns(colour);
+            return;
+
+        } else if (grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
+            grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
+            changeTurns(colour);
+
+        } else {
+            throw new IllegalMoveException("The fields are not adjacent to each other.");
+        }
+
+        if (isInMill(toPosX, toPosY)) {
+            thereIsAMill = true;
+            System.out.println("there is a mill");
         }
     }
 
@@ -129,10 +136,28 @@ public class Game {
                     thereIsAMill = false;
                     if (colour == Grid.COLOUR_WHITE) {
                         whiteStonesOnTheGrid--;
+                        blackStonesOnTheGrid--;
+                        if (whiteStonesInInventory == 0) {
+                            if (whiteStonesOnTheGrid <= 3) {
+                                whiteInJumpPhase = true;
+                            }
+                            if (whiteStonesOnTheGrid < 3) {
+                                currentPhase = GAME_OVER;
+                            }
+                        }
                     }
                     else {
                         blackStonesOnTheGrid--;
+                        if (blackStonesInInventory == 0) {
+                            if (blackStonesOnTheGrid <= 3) {
+                                blackInJumpPhase = true;
+                            }
+                            if (blackStonesOnTheGrid < 3) {
+                                currentPhase = GAME_OVER;
+                            }
+                        }
                     }
+                    if (blackInJumpPhase && whiteInJumpPhase) currentPhase = JUMP_PHASE;
                 } else {
                     throw new IllegalMoveException("This stone may not be removed.");
                 }
@@ -163,6 +188,7 @@ public class Game {
             case PLACE_PHASE -> "Place Phase";
             case MOVE_PHASE -> "Move Phase";
             case JUMP_PHASE -> "Jump Phase";
+            case GAME_OVER -> "Game Over";
             default -> throw new IllegalStateException("Unexpected value: " + currentPhase);
         };
     }
@@ -216,6 +242,14 @@ public class Game {
 
         return (isInMill(posX, posY) && !moreThanThreeStonesLeft)
                 || !isInMill(posX, posY);
+    }
+
+    public boolean isWhiteInJumpPhase() {
+        return whiteInJumpPhase;
+    }
+
+    public boolean isBlackInJumpPhase() {
+        return blackInJumpPhase;
     }
 
     @Override

@@ -90,6 +90,9 @@ public class GamePanel extends JPanel implements ActionListener {
         @Override
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
+
+            if (game.isThereAMill()) return;
+
             for (Stone stone : moveableStones) {
                 if (stone.contains(e.getPoint())) {
                     stone.setPreviousPoint(e.getPoint());
@@ -112,6 +115,9 @@ public class GamePanel extends JPanel implements ActionListener {
         @Override
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
+
+            if (game.isThereAMill()) return;
+
             for (Stone stone : moveableStones) {
                 if (stone.contains(e.getPoint())) {
                     for (FieldPosition validPosition : validPositions) {
@@ -119,38 +125,31 @@ public class GamePanel extends JPanel implements ActionListener {
                                 Math.pow(validPosition.getY() - e.getPoint().getY(), 2) +
                                 Math.pow(validPosition.getX() - e.getPoint().getX(), 2)
                         );
-                        if (distance <= dropZoneRadius && !game.isThereAMill()) {
+                        if (distance <= dropZoneRadius) {
                             try {
-                                switch (game.getPhase()) {
-                                    case Game.PLACE_PHASE -> {
-                                        game.placeStone(validPosition.getGridX(), validPosition.getGridY(), new backend.Stone(stone.getColour()));
-                                        currentlyClickedStone.moveToCenter((int) validPosition.getX(), (int) validPosition.getY());
-                                        repaint();
+                                if (game.getPhase() == Game.PLACE_PHASE) {
+                                    game.placeStone(validPosition.getGridX(), validPosition.getGridY(), new backend.Stone(stone.getColour()));
+                                    currentlyClickedStone.moveToCenter((int) validPosition.getX(), (int) validPosition.getY());
+                                    repaint();
 
-                                        currentlyClickedStone.setGridPosX(validPosition.getGridX());
-                                        currentlyClickedStone.setGridPosY(validPosition.getGridY());
-                                        moveableStones.remove(currentlyClickedStone);
-                                        placedStones.add(currentlyClickedStone);
-                                        currentlyClickedStone.setBeingDragged(false);
+                                    currentlyClickedStone.setGridPosX(validPosition.getGridX());
+                                    currentlyClickedStone.setGridPosY(validPosition.getGridY());
+                                    moveableStones.remove(currentlyClickedStone);
+                                    placedStones.add(currentlyClickedStone);
+                                    currentlyClickedStone.setBeingDragged(false);
 
-                                        if (game.getPhase() == Game.MOVE_PHASE) {
-                                            moveableStones.addAll(placedStones);
-                                        }
+                                    if (game.getPhase() == Game.MOVE_PHASE) {
+                                        moveableStones.addAll(placedStones);
                                     }
+                                } else {
+                                    // MOVE_PHASE and JUMP_PHASE have identical checks. Everything else is done in backend.Game
+                                    game.moveStone(currentlyClickedStone.getGridPosX(), currentlyClickedStone.getGridPosY(), validPosition.getGridX(), validPosition.getGridY());
+                                    currentlyClickedStone.moveToCenter((int) validPosition.getX(), (int) validPosition.getY());
+                                    repaint();
 
-                                    case Game.MOVE_PHASE -> {
-                                        game.moveStone(currentlyClickedStone.getGridPosX(), currentlyClickedStone.getGridPosY(), validPosition.getGridX(), validPosition.getGridY());
-                                        currentlyClickedStone.moveToCenter((int) validPosition.getX(), (int) validPosition.getY());
-                                        repaint();
-
-                                        currentlyClickedStone.setGridPosX(validPosition.getGridX());
-                                        currentlyClickedStone.setGridPosY(validPosition.getGridY());
-                                        currentlyClickedStone.setBeingDragged(false);
-                                    }
-
-                                    case Game.JUMP_PHASE -> {
-
-                                    }
+                                    currentlyClickedStone.setGridPosX(validPosition.getGridX());
+                                    currentlyClickedStone.setGridPosY(validPosition.getGridY());
+                                    currentlyClickedStone.setBeingDragged(false);
                                 }
 
                                 currentlyClickedStone = null;
@@ -189,6 +188,9 @@ public class GamePanel extends JPanel implements ActionListener {
             text = (game.isThereAMill() ? "Es gibt eine Mühle" : "") + " Ein Stein von " + game.getCurrentPlayer() + " darf entfernt werden.";
         } else {
             text = game.getCurrentPlayer() + " ist am Zug.";
+        }
+        if (game.getPhase() == Game.GAME_OVER) {
+            text = "GAME OVER LOL. " + game.getCurrentPlayer() + " hat gewonnen.";
         }
         g.drawString(text, 350, 50);
         g.drawString(game.getPhaseAsString(), 350, 25);
