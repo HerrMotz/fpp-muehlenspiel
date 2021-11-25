@@ -86,7 +86,6 @@ public class Game {
 
             if (isInMill(posX, posY)) {
                 thereIsAMill = true;
-                System.out.println("there is a mill");
             }
         } else {
             throw new IllegalMoveException("You do not have any stones left");
@@ -110,6 +109,22 @@ public class Game {
             }
         }
         return false;
+    }
+
+    public boolean areAllStonesInAMill(boolean colour) {
+        for (int y = 0; y < grid.LIMIT_Y; y++) {
+            for (int x = 0; x < grid.LIMIT_X; x++) {
+                try {
+                    Field field = grid.getField(x, y);
+                    if (!field.isEmpty() && field.getStone().getColour() == colour) {
+                        if (!isInMill(field.getPosX(), field.getPosY())) {
+                            return false;
+                        }
+                    }
+                } catch (IllegalMoveException ignored) {}
+            }
+        }
+        return true;
     }
 
     public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
@@ -144,7 +159,6 @@ public class Game {
 
         if (isInMill(toPosX, toPosY)) {
             thereIsAMill = true;
-            System.out.println("there is a mill");
         }
     }
 
@@ -207,6 +221,10 @@ public class Game {
         return lastMoveByColour ? "Black" : "White";
     }
 
+    public String getOtherPlayer() {
+        return lastMoveByColour ? "White" : "Black";
+    }
+
     public String getPhaseAsString() {
         return switch (currentPhase) {
             case PLACE_PHASE -> "Place Phase";
@@ -255,17 +273,7 @@ public class Game {
         field = grid.getField(posX, posY);
         if (field.isEmpty()) throw new IllegalMoveException("There is no stone at the given field, which may be removed");
 
-        boolean moreThanThreeStonesLeft = true;
-        if (field.getStone().getColour() == Grid.COLOUR_WHITE) {
-            if (whiteStonesOnTheGrid <= 3) {
-                moreThanThreeStonesLeft = false;
-            }
-        } else if (blackStonesOnTheGrid <= 3) {
-            moreThanThreeStonesLeft = false;
-        }
-
-        return (isInMill(posX, posY) && !moreThanThreeStonesLeft)
-                || !isInMill(posX, posY);
+        return !isInMill(posX, posY) || areAllStonesInAMill(field.getStone().getColour());
     }
 
     public boolean isWhiteInJumpPhase() {

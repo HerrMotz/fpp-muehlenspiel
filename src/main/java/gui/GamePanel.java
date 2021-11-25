@@ -190,7 +190,7 @@ public class GamePanel extends JPanel implements ActionListener {
             text = game.getCurrentPlayer() + " ist am Zug.";
         }
         if (game.getPhase() == Game.GAME_OVER) {
-            text = "GAME OVER LOL. " + game.getCurrentPlayer() + " hat gewonnen.";
+            text = "GAME OVER LOL. " + game.getOtherPlayer() + " hat gewonnen.";
         }
         g.drawString(text, 350, 50);
         g.drawString(game.getPhaseAsString(), 350, 25);
