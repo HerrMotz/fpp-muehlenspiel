@@ -1,15 +1,18 @@
 package gui;
 
+import backend.Game;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class GameFrame extends JFrame {
-    GamePanel gamePanel = new GamePanel();
+    GamePanel gamePanel;
 
     public static final int SCREEN_WIDTH = 800;
     public static final int SCREEN_HEIGHT = 800;
 
-    public GameFrame() {
+    public GameFrame(DebugFrame debugFrame, Game game) {
+        gamePanel = new GamePanel(debugFrame, game);
         this.setTitle("Mühle für zwei Spieler");
         this.getContentPane().add(gamePanel, BorderLayout.CENTER);
         this.pack();

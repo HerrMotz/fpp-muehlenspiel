@@ -24,14 +24,14 @@ public class GamePanel extends JPanel implements ActionListener {
 
     double dropZoneRadius = 30;
 
-    public GamePanel() {
+    DebugFrame debugFrame;
+
+    public GamePanel(DebugFrame debugFrame, Game game) {
         super();
 
-        try {
-            game = new Game(true, 0.5);
-        } catch (IllegalMoveException ignored) {
-            return;
-        }
+        this.debugFrame = debugFrame;
+
+        this.game = game;
 
         for (int i = 0; i < 9; i++) {
             whiteStones.add(new Stone(Grid.COLOUR_WHITE, 10, 100 + i*70));
@@ -183,6 +183,8 @@ public class GamePanel extends JPanel implements ActionListener {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+
+        debugFrame.repaint();
 
         String text;
         if (game.isThereAMill()) {
