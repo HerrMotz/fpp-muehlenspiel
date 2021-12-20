@@ -33,9 +33,21 @@ public class Game {
         }
     }
 
-    public int getStonesInInventory(boolean colour) {
+    public Integer getStonesInInventory(boolean colour) {
         if (colour == Grid.COLOUR_WHITE) return whiteStonesInInventory;
         if (colour == Grid.COLOUR_BLACK) return blackStonesInInventory;
+        throw new IllegalArgumentException("The given colour does not exist");
+    }
+
+    public Integer getStonesOnGrid(boolean colour) {
+        if (colour == Grid.COLOUR_WHITE) return whiteStonesOnTheGrid;
+        if (colour == Grid.COLOUR_BLACK) return blackStonesOnTheGrid;
+        throw new IllegalArgumentException("The given colour does not exist");
+    }
+
+    public Boolean isColourInJumpPhase(boolean colour) {
+        if (colour == Grid.COLOUR_WHITE) return whiteInJumpPhase;
+        if (colour == Grid.COLOUR_BLACK) return blackInJumpPhase;
         throw new IllegalArgumentException("The given colour does not exist");
     }
 
@@ -174,7 +186,6 @@ public class Game {
                     thereIsAMill = false;
                     if (colour == Grid.COLOUR_WHITE) {
                         whiteStonesOnTheGrid--;
-                        blackStonesOnTheGrid--;
                         if (whiteStonesInInventory == 0) {
                             if (whiteStonesOnTheGrid <= 3) {
                                 whiteInJumpPhase = true;
