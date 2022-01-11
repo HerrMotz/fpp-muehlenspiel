@@ -224,12 +224,54 @@ public class GameTest {
             game.placeStone(3,4, new Stone(Grid.COLOUR_WHITE));
             game.placeStone(6,6, new Stone(Grid.COLOUR_BLACK));
 
-            game.moveStone(2,3, 2,4);
+            game.moveStone(2,3,2,4);
             System.out.println(game);
             assertFalse(game.isThereAMill());
             game.moveStone(6,3, 5,3);
             assertTrue(game.isThereAMill());
             System.out.println(game);
+        } catch (IllegalMoveException e) {
+            fail("Expected no exception, got: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void checkJumpPhase() {
+        try {
+            //PlacePhase
+            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(0, 0, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,3, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(0, 6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6,6, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.removeStone(0,0);
+            game.placeStone(1, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(1,5, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(2, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,5, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 0, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(5,5, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.removeStone(0,6);
+            game.placeStone(3, 2, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(1,1, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 4, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(3,1, new Stone(Grid.COLOUR_WHITE));
+            game.placeStone(3, 6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(5,1, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.removeStone(1,3);
+            game.placeStone(4, 3, new Stone(Grid.COLOUR_BLACK));
+            //MovePhase
+            game.moveStone(6,3,5,3); //white Mill
+            game.removeStone(2,3);
+            game.moveStone(4,3,4,2);
+            game.moveStone(5,3,6,3); //white Mill
+            game.removeStone(3,0);
+            game.moveStone(4,2,4,3);
+            game.moveStone(6,3,5,3); //white Mill
+            game.removeStone(3,6);
+            //JumpPhase (black)
+            game.moveStone(3,2,0,6); //jump
+
         } catch (IllegalMoveException e) {
             fail("Expected no exception, got: " + e.getMessage());
         }
