@@ -1,6 +1,7 @@
-package gui;
+package frontend.windows;
 
-import backend.Game;
+import frontend.helpers.Game;
+import frontend.panels.DebugPanel;
 
 import javax.swing.*;
 import java.awt.*;

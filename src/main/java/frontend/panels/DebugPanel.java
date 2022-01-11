@@ -1,7 +1,7 @@
-package gui;
+package frontend.panels;
 
-import backend.Game;
-import backend.Grid;
+import frontend.helpers.Game;
+import interfaces.GameInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +31,7 @@ public class DebugPanel extends JPanel {
                 30
         );
         g.drawString(
-                game.getStonesInInventory(Grid.COLOUR_WHITE).toString(),
+                game.getStonesInInventory(GameInterface.COLOUR_WHITE).toString(),
                 secondColumn,
                 30
         );
@@ -43,7 +43,7 @@ public class DebugPanel extends JPanel {
         );
 
         g.drawString(
-                game.getStonesInInventory(Grid.COLOUR_BLACK).toString(),
+                game.getStonesInInventory(GameInterface.COLOUR_BLACK).toString(),
                 secondColumn,
                 50
         );
@@ -60,7 +60,7 @@ public class DebugPanel extends JPanel {
                 130
         );
         g.drawString(
-                game.getStonesOnGrid(Grid.COLOUR_WHITE).toString(),
+                game.getStonesOnGrid(GameInterface.COLOUR_WHITE).toString(),
                 secondColumn,
                 130
         );
@@ -72,7 +72,7 @@ public class DebugPanel extends JPanel {
         );
 
         g.drawString(
-                game.getStonesOnGrid(Grid.COLOUR_BLACK).toString(),
+                game.getStonesOnGrid(GameInterface.COLOUR_BLACK).toString(),
                 secondColumn,
                 150
         );
@@ -88,7 +88,7 @@ public class DebugPanel extends JPanel {
                 230
         );
         g.drawString(
-                game.isColourInJumpPhase(Grid.COLOUR_WHITE).toString(),
+                game.isColourInJumpPhase(GameInterface.COLOUR_WHITE).toString(),
                 secondColumn,
                 230
         );
@@ -100,7 +100,7 @@ public class DebugPanel extends JPanel {
         );
 
         g.drawString(
-                game.isColourInJumpPhase(Grid.COLOUR_BLACK).toString(),
+                game.isColourInJumpPhase(GameInterface.COLOUR_BLACK).toString(),
                 secondColumn,
                 250
         );

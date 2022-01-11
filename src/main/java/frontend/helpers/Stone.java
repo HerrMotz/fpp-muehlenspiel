@@ -1,11 +1,13 @@
-package gui;
+package frontend.helpers;
 
-import backend.Grid;
+import interfaces.GameInterface;
+import interfaces.StoneInterface;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
 
-public class Stone {
+public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
     private Point currentPoint;
     private Point previousPoint;
@@ -20,13 +22,15 @@ public class Stone {
 
     public Stone(boolean colour, int xPos, int yPos) {
         this.colour = colour;
-        if (colour == Grid.COLOUR_WHITE) {
+
+        if (colour == GameInterface.COLOUR_WHITE) {
             icon = new ImageIcon("resources/whiteStone60x60.png");
         } else {
             icon = new ImageIcon("resources/blackStone60x60.png");
         }
 
         currentPoint = new Point(xPos, yPos);
+        previousPoint = new Point(xPos, yPos);
     }
 
     public boolean contains(Point point) {
@@ -42,10 +46,7 @@ public class Stone {
     }
 
     public void moveToTopLeftCorner(int xPos, int yPos) {
-        this.getCurrentPoint().translate(
-                (int)(xPos - this.getPreviousPoint().getX()),
-                (int)(yPos - this.getPreviousPoint().getY())
-        );
+        this.getCurrentPoint().move(xPos, yPos);
         this.setPreviousPoint(this.getCurrentPoint());
     }
 
@@ -114,6 +115,7 @@ public class Stone {
     }
 
     public void setGridPosY(int gridPosY) {
+        moveToCenter(currentPoint.x, gridPosY);
         this.gridPosY = gridPosY;
     }
 }

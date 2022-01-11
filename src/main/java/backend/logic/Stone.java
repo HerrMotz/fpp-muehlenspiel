@@ -1,8 +1,11 @@
-package backend;
+package backend.logic;
 
+import interfaces.StoneInterface;
+
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Stone {
+public class Stone implements StoneInterface, Serializable {
 
     boolean colour;
 

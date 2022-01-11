@@ -1,7 +1,9 @@
-package backend;
+package backend.logic;
+
+import interfaces.StoneInterface;
 
 public class Field {
-    private Stone stone;
+    private StoneInterface stone;
     private final int posX;
     private final int posY;
 
@@ -11,11 +13,11 @@ public class Field {
         this.posY = posY;
     }
 
-    public Stone getStone() {
+    public StoneInterface getStone() {
         return stone;
     }
 
-    public void setStone(Stone stone) {
+    public void setStone(StoneInterface stone) {
         this.stone = stone;
     }
 

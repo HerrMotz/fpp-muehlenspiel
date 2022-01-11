@@ -1,4 +1,4 @@
-package gui;
+package frontend.helpers;
 
 import java.awt.*;
 
