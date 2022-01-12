@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
-    private Point point;
+    private final Point point;
 
     private Point dragStartPoint;
     private boolean isBeingDragged = false;
@@ -45,7 +45,7 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public void moveToTopLeftCorner(int xPos, int yPos) {
-        this.getPoint().setLocation(xPos, yPos);
+        point.setLocation(xPos, yPos);
     }
 
     public void moveToCenter(int xPos, int yPos) {
@@ -100,9 +100,12 @@ public class Stone implements StoneInterface, Serializable {
         return gridPosY;
     }
 
-    public void setGridPositions(int gridPosX, int gridPosY) {
+    public void setGridPosition(int gridPosX, int gridPosY) {
+        System.out.println("setGridPosition x:" + gridPosX + " y:" + gridPosY);
         this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
         moveToCenter(100 + 100 * gridPosX, 100 + 100 * gridPosY);
+        this.dragStartPoint = point;
+        resetForNewDrag();
     }
 }

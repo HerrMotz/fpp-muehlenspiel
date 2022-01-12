@@ -27,7 +27,7 @@ public class SocketListener extends SwingWorker<Void, Void> {
                 }
                 Object event = objectInputStream.readObject();
                 firePropertyChange("GameEvent", null, event);
-                System.out.println("[Client SocketListener] event " + ((GameEvent) event).getMethod() + Arrays.toString(((GameEvent) event).getArguments()));
+                System.out.println("[Client SocketListener] event " + ((GameEvent) event).getMethod() + " " + Arrays.toString(((GameEvent) event).getArguments()));
             } catch (IOException | ClassNotFoundException ignored) {}
         }
         System.out.println("[Client SocketListener] end");

@@ -112,12 +112,11 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case PlaceStone -> {
                             Stone referencedStone = allStones.get(reference);
-                            referencedStone.resetForNewDrag();
 
                             int xPos = (int) arguments[0];
                             int yPos = (int) arguments[1];
 
-                            referencedStone.setGridPositions(xPos, yPos);
+                            referencedStone.setGridPosition(xPos, yPos);
 
                             movableStones.remove(referencedStone);
                             placedStones.add(referencedStone);
@@ -134,25 +133,24 @@ public class GamePanel extends JPanel implements ActionListener {
 
                             movableStones.remove(referencedStone);
                             placedStones.remove(referencedStone);
+
                             referencedStone.moveToTopLeftCorner(900,900);
                         }
 
                         case MoveStone -> {
                             Stone referencedStone = allStones.get(reference);
-                            referencedStone.resetForNewDrag();
 
                             int toXPos = (int) arguments[2];
                             int toYPos = (int) arguments[3];
 
-                            referencedStone.setGridPositions(toXPos, toYPos);
+                            referencedStone.setGridPosition(toXPos, toYPos);
 
                             game.swapMoves();
                         }
                     }
-
-                    repaint();
-
                 } catch (IOException ignored) {}
+
+                currentlyClickedStone = null;
                 repaint();
             }
         });
@@ -257,7 +255,10 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
             }
 
-            currentlyClickedStone.resetToDragStart();
+            if (currentlyClickedStone != null) {
+                currentlyClickedStone.resetToDragStart();
+            }
+
             currentlyClickedStone = null;
             repaint();
         }
