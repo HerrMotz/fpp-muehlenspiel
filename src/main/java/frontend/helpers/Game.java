@@ -138,15 +138,12 @@ public class Game {
         return currentPhase.toString();
     }
 
+    public boolean isItMyTurn() {
+        return !lastMoveByColour == myColour;
+    }
+
     public String getCurrentPlayerAsString() {
-        if (!lastMoveByColour == myColour) {
-            return "your";
-        }
-        if (!lastMoveByColour == GameInterface.COLOUR_WHITE) {
-            return "White's";
-        } else {
-            return "Black's";
-        }
+        return !lastMoveByColour == GameInterface.COLOUR_WHITE ? "White" : "Black";
     }
 
     public boolean getOtherPlayer() {

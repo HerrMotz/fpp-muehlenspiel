@@ -283,20 +283,37 @@ public class GamePanel extends JPanel implements ActionListener {
         String text = "";
 
         if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
-            g.drawString("You are: " + game.getMyColourAsString(), 100, 40);
+            g.drawString(
+                    "You are: "
+                    + game.getMyColourAsString(),
+                    100,
+                    40
+            );
+        }
+
+        if (errorMessage.equals("It's the other player's turn.")
+            && game.isItMyTurn()) {
+            errorMessage = "Please use stones of your own colour to make a move.";
         }
 
         g.drawString(errorMessage, 350, 70);
 
         if (game.isThereAMill()) {
-            text = (game.isThereAMill() ? "There is a mill" : "") + " A stone of player " + game.getCurrentPlayerAsString() + " may be removed. Click the stone to do so.";
+            text = (game.isThereAMill() ? "There is a mill" : "")
+                    + " A stone of player "
+                    + game.getCurrentPlayerAsString()
+                    + " may be removed. Click the stone to do so.";
 
         } else if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
-            text = "It's " + game.getCurrentPlayerAsString() + " turn.";
+            text = "It's "
+                    + (game.isItMyTurn() ? "your" : (game.getCurrentPlayerAsString() + "'s"))
+                    + " turn.";
         }
 
         if (game.getPhase() == GamePhase.GAME_OVER) {
-            text = "GAME OVER LOL. " + game.getOtherPlayer() + " won.";
+            text = "GAME OVER LOL. "
+                    + game.getOtherPlayer()
+                    + " won.";
         }
 
         g.drawString(text, 350, 50);
