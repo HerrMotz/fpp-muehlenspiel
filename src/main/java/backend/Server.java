@@ -33,6 +33,7 @@ public class Server extends Thread {
             //noinspection InfiniteLoopStatement
             while (true) {
                 if (serverWorkers.size() < 2) {
+                    // DEBUG
                     System.out.println("accepting");
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Test");
@@ -41,10 +42,12 @@ public class Server extends Thread {
                     serverWorkers.add(serverWorker);
                     serverWorker.start();
 
+                    // DEBUG
                     System.out.println("Connected to: " + clientSocket);
                     System.out.println("Client count: " + serverWorkers.size());
 
                     if (serverWorkers.size() == 2) {
+                        // DEBUG
                         System.out.println("Start game");
                         game = new Game(true, .5);
 
@@ -78,11 +81,15 @@ public class Server extends Thread {
     }
 
     public void broadcast(GameEvent event) {
+        // DEBUG
         System.out.println("Broadcast");
+
         for (ServerWorker serverWorker : serverWorkers) {
             System.out.println("Broadcasting 1");
+
             serverWorker.emit(event);
         }
+
         System.out.println("Broadcasting 2");
 
         System.out.println(getServerWorkers());
@@ -94,7 +101,10 @@ public class Server extends Thread {
 
     public void removeServerWorker(ServerWorker serverWorker) {
         serverWorkers.remove(serverWorker);
+
+        // DEBUG
         System.out.println("Client count: " + serverWorkers.size());
+
         if (serverWorkers.size() > 0) {
             broadcast(new GameEvent(
                     GameEventMethod.GameAborted,

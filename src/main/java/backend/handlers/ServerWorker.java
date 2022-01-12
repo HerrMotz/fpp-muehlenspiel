@@ -130,6 +130,7 @@ public class ServerWorker extends Thread {
                 }
             }
 
+            // DEBUG
             System.out.println("[GameEvent] " + this.getName() + " " + (myColour ? "White" : "Black"));
             System.out.println(server.getGame());
             System.out.println(event.getMethod());
