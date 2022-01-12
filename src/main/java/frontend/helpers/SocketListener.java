@@ -1,8 +1,6 @@
 package frontend.helpers;
 
-import frontend.listeners.GameEventListener;
 import interfaces.GameEvent;
-import interfaces.GameEventMethod;
 
 import javax.swing.*;
 import java.io.IOException;

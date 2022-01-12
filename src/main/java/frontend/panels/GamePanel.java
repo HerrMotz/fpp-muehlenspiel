@@ -5,7 +5,6 @@ import frontend.helpers.FieldPosition;
 import frontend.helpers.Game;
 import frontend.helpers.SocketListener;
 import frontend.helpers.Stone;
-import frontend.listeners.GameEventListener;
 import frontend.windows.DebugFrame;
 import interfaces.*;
 
@@ -76,12 +75,30 @@ public class GamePanel extends JPanel implements ActionListener {
                 try {
                     GameEvent gameEvent = (GameEvent) e.getNewValue();
                     Object[] arguments = gameEvent.getArguments();
+                    GameStatus gameStatus = gameEvent.getGameStatus();
+                    int reference = gameEvent.getReference();
+
+                    errorMessage = "";
 
                     switch (gameEvent.getMethod()) {
                         case Pong -> System.out.println("[GameEvent] Pong: " + Arrays.toString(gameEvent.getArguments()));
-                        case Ping -> client.emit(new GameEvent(GameEventMethod.Pong, "Client"));
+                        case Ping -> client.emit(new GameEvent(
+                                GameEventMethod.Pong,
+                                -1,
+                                null,
+                                "Client"
+                        ));
 
-                        case IllegalMove -> errorMessage = gameEvent.getArguments()[0].toString();
+                        case IllegalMove -> {
+                            errorMessage = gameEvent.getArguments()[0].toString();
+
+                            if (reference != -1) {
+                                Stone referencedStone = allStones.get(reference);
+                                try {
+                                    referencedStone.resetToDragStart();
+                                } catch (NullPointerException ignored) {}
+                            }
+                        }
 
                         case GameStart -> {
                             game.startGame((Boolean)arguments[0], (Boolean)arguments[1]);
@@ -93,48 +110,46 @@ public class GamePanel extends JPanel implements ActionListener {
                         }
 
                         case PlaceStone -> {
-                            int reference = (int) arguments[0];
                             Stone referencedStone = allStones.get(reference);
 
-                            int xPos = (int) arguments[1];
-                            int yPos = (int) arguments[2];
+                            int xPos = (int) arguments[0];
+                            int yPos = (int) arguments[1];
 
-                            referencedStone.moveToCenter(xPos, yPos);
+                            referencedStone.setGridPositions(xPos, yPos);
 
                             movableStones.remove(referencedStone);
                             placedStones.add(referencedStone);
 
-                            repaint();
-
                             if (game.getPhase() == GamePhase.MOVE_PHASE) {
                                 movableStones.addAll(placedStones);
                             }
+
+                            game.swapMoves();
                         }
 
                         case RemoveStone -> {
-                            int reference = (int) arguments[0];
                             Stone referencedStone = allStones.get(reference);
 
                             movableStones.remove(referencedStone);
                             placedStones.remove(referencedStone);
                             referencedStone.moveToTopLeftCorner(900,900);
-
-                            repaint();
                         }
 
                         case MoveStone -> {
-                            int reference = (int) arguments[0];
                             Stone referencedStone = allStones.get(reference);
 
-                            int xPos = (int) arguments[1];
-                            int yPos = (int) arguments[2];
+                            int xPos = (int) arguments[0];
+                            int yPos = (int) arguments[1];
 
-                            referencedStone.setGridPosX(xPos);
-                            referencedStone.setGridPosY(yPos);
+                            referencedStone.setGridPositions(xPos, yPos);
 
-                            repaint();
+                            game.swapMoves();
                         }
                     }
+
+                    repaint();
+                    game.setStatus(gameStatus);
+
                 } catch (IOException ignored) {}
                 repaint();
             }
@@ -184,7 +199,6 @@ public class GamePanel extends JPanel implements ActionListener {
 
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
-                    stone.setPreviousPoint(e.getPoint());
                     currentlyClickedStone = stone;
 
                     if (!currentlyClickedStone.isBeingDragged()) {
@@ -221,7 +235,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                             allStones.indexOf(stone),
                                             validPosition.getGridX(),
                                             validPosition.getGridY(),
-                                            new Stone(stone.getColour(), 0, 0)
+                                            stone.getColour()
                                     );
                                 } else {
                                     // MOVE_PHASE and JUMP_PHASE have identical checks. Everything else is done in backend.logic.Game

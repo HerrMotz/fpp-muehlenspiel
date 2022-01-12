@@ -242,6 +242,7 @@ public class Grid {
         if (!getField(posX, posY).isEmpty()) {
             throw new IllegalMoveException("There already is a stone at this position.");
         }
+
         grid[posY][posX].setStone(stone);
     }
 

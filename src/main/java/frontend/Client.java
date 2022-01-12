@@ -1,7 +1,6 @@
 package frontend;
 
 import frontend.helpers.Game;
-import frontend.listeners.GameEventListener;
 import frontend.windows.DebugFrame;
 import frontend.windows.GameFrame;
 import interfaces.GameEvent;
