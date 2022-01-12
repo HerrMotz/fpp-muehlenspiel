@@ -1,18 +1,20 @@
 package frontend.helpers;
 
+import frontend.panels.GamePanel;
 import interfaces.GameInterface;
 import interfaces.StoneInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
     private final Point point;
 
     private Point dragStartPoint;
-    private boolean isBeingDragged = false;
+    private final AtomicBoolean isBeingDragged = new AtomicBoolean(false);
 
     private final boolean colour;
 
@@ -69,23 +71,18 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public void setDragStartPoint(Point dragStartPoint) {
-        System.out.println("Set Drag Start Point. Is being dragged: " + isBeingDragged);
-        if (!isBeingDragged) {
-            System.out.println("Set drag start point " + dragStartPoint);
+        if (!isBeingDragged.get()) {
+            System.out.println("Set Drag Start Point. " + dragStartPoint);
             this.dragStartPoint = dragStartPoint;
             System.out.println(dragStartPoint);
-            isBeingDragged = true;
+            isBeingDragged.set(false);
         }
     }
 
     public void resetToDragStart() {
         System.out.println("reset to drag start x:" + dragStartPoint.getX() + " y:" + dragStartPoint.getY());
         moveToTopLeftCorner(dragStartPoint.x, dragStartPoint.y);
-        isBeingDragged = false;
-    }
-
-    public void resetForNewDrag() {
-        isBeingDragged = false;
+        isBeingDragged.set(false);
     }
 
     public boolean getColour() {
@@ -104,8 +101,10 @@ public class Stone implements StoneInterface, Serializable {
         System.out.println("setGridPosition x:" + gridPosX + " y:" + gridPosY);
         this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
-        moveToCenter(100 + 100 * gridPosX, 100 + 100 * gridPosY);
+        moveToCenter(
+        GamePanel.gridStart + GamePanel.distanceBetweenGridLines * gridPosX,
+        GamePanel.gridStart + GamePanel.distanceBetweenGridLines * gridPosY);
         this.dragStartPoint = point;
-        resetForNewDrag();
+        isBeingDragged.set(false);
     }
 }

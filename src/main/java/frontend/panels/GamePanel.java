@@ -6,6 +6,7 @@ import frontend.helpers.Game;
 import frontend.helpers.SocketListener;
 import frontend.helpers.Stone;
 import frontend.windows.DebugFrame;
+import frontend.windows.GameFrame;
 import interfaces.*;
 
 import javax.swing.*;
@@ -17,6 +18,23 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class GamePanel extends JPanel implements ActionListener {
+    public static final int inventoryStonesStartY = 100;
+    public static final int inventoryStonesOffsetX = 10;
+    public static final int inventoryStonesOffsetY = 70;
+
+    public static final int whiteStonesPosX = inventoryStonesOffsetX;
+    public static final int blackStonesPosX = GameFrame.SCREEN_WIDTH - inventoryStonesOffsetX - 60;
+
+    public static final int gridStart = 110;
+    public static final int gridEnd = 710;
+    public static final int middleOfGridStartAndEnd = (gridStart + gridEnd) / 2;
+
+    public static final int distanceBetweenGridLines = 100;
+    public static final int distanceBetweenThreeGridLines = gridStart + distanceBetweenGridLines * 2;
+    public static final int oppositePositionBetweenThreeGridLines = gridEnd - distanceBetweenGridLines * 2;
+
+    public static final int stoneOutOfBoundsPos = 1000;
+
     ArrayList<Stone> whiteStones = new ArrayList<>();
     ArrayList<Stone> blackStones = new ArrayList<>();
     ArrayList<Stone> allStones = new ArrayList<>();
@@ -27,6 +45,7 @@ public class GamePanel extends JPanel implements ActionListener {
     Client client;
     Game game;
 
+    String text = "";
     String errorMessage = "";
 
     Stone currentlyClickedStone;
@@ -41,11 +60,11 @@ public class GamePanel extends JPanel implements ActionListener {
         this.client = game.getClient();
 
         for (int i = 0; i < 9; i++) {
-            whiteStones.add(new Stone(GameInterface.COLOUR_WHITE, 10, 100 + i*70));
+            whiteStones.add(new Stone(GameInterface.COLOUR_WHITE, whiteStonesPosX, inventoryStonesStartY + i * inventoryStonesOffsetY));
         }
 
         for (int i = 0; i < 9; i++) {
-            Stone stone = new Stone(GameInterface.COLOUR_BLACK, 730, 100 + i*70);
+            Stone stone = new Stone(GameInterface.COLOUR_BLACK, blackStonesPosX, inventoryStonesStartY + i * inventoryStonesOffsetY);
             blackStones.add(stone);
         }
 
@@ -110,6 +129,12 @@ public class GamePanel extends JPanel implements ActionListener {
                             game.abortGame();
                         }
 
+                        case GameOver -> {
+                            text = "GAME OVER LOL. "
+                                    + game.getOtherPlayerAsString()
+                                    + " won.";
+                        }
+
                         case PlaceStone -> {
                             Stone referencedStone = allStones.get(reference);
 
@@ -134,7 +159,7 @@ public class GamePanel extends JPanel implements ActionListener {
                             movableStones.remove(referencedStone);
                             placedStones.remove(referencedStone);
 
-                            referencedStone.moveToTopLeftCorner(900,900);
+                            referencedStone.moveToTopLeftCorner(stoneOutOfBoundsPos, stoneOutOfBoundsPos);
                         }
 
                         case MoveStone -> {
@@ -224,6 +249,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                 Math.pow(validPosition.getY() - e.getPoint().getY(), 2) +
                                 Math.pow(validPosition.getX() - e.getPoint().getX(), 2)
                         );
+
                         if (distance <= dropZoneRadius) {
                             try {
                                 if (game.getPhase() == GamePhase.PLACE_PHASE) {
@@ -234,7 +260,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                             stone.getColour()
                                     );
                                 } else {
-                                    // MOVE_PHASE and JUMP_PHASE have identical checks. Everything else is done in backend.logic.Game
+                                    // MOVE_PHASE and JUMP_PHASE have identical parameters. Everything else is done in backend.logic.Game
                                     game.moveStone(
                                             allStones.indexOf(stone),
                                             currentlyClickedStone.getGridPosX(),
@@ -249,24 +275,26 @@ public class GamePanel extends JPanel implements ActionListener {
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
+
+                            // Breaks out of the for loop early
                             return;
                         }
                     }
+
+                    // There is a stone which the mouse is hovering over, but it
+                    // has not been dropped over a dropzone
+                    currentlyClickedStone.resetToDragStart();
+                    repaint();
                 }
             }
-
-            if (currentlyClickedStone != null) {
-                currentlyClickedStone.resetToDragStart();
-            }
-
-            currentlyClickedStone = null;
-            repaint();
         }
     }
 
     private class DragListener extends MouseMotionAdapter {
         @Override
         public void mouseDragged(MouseEvent e) {
+            System.out.println("Mouse Dragged");
+
             if (currentlyClickedStone != null) {
                 currentlyClickedStone.moveToCenter((int)e.getPoint().getX(), (int)e.getPoint().getY());
             }
@@ -279,8 +307,6 @@ public class GamePanel extends JPanel implements ActionListener {
         super.paint(g);
 
         debugFrame.repaint();
-
-        String text = "";
 
         if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
             g.drawString(
@@ -310,29 +336,23 @@ public class GamePanel extends JPanel implements ActionListener {
                     + " turn.";
         }
 
-        if (game.getPhase() == GamePhase.GAME_OVER) {
-            text = "GAME OVER LOL. "
-                    + game.getOtherPlayer()
-                    + " won.";
-        }
-
         g.drawString(text, 350, 50);
         g.drawString(game.getPhaseAsString(), 350, 25);
 
         for (int i = 0; i < 3; i++) {
-            int j = i*100;
-            g.drawLine(100 + j, 100 + j, 700 - j, 100 + j);
-            g.drawLine(100 + j, 700 - j, 700 - j, 700 - j);
+            int j = i * distanceBetweenGridLines;
+            g.drawLine(gridStart + j, gridStart + j, gridEnd - j, gridStart + j);
+            g.drawLine(gridStart + j, gridEnd - j, gridEnd - j, gridEnd - j);
 
-            g.drawLine(100 + j, 100 + j, 100 + j, 700 - j);
-            g.drawLine(700 - j, 100 + j, 700 - j, 700 - j);
+            g.drawLine(gridStart + j, gridStart + j, gridStart + j, gridEnd - j);
+            g.drawLine(gridEnd - j, gridStart + j, gridEnd - j, gridEnd - j);
         }
 
-        g.drawLine(400, 100, 400, 300);
-        g.drawLine(100, 400, 300, 400);
+        g.drawLine(middleOfGridStartAndEnd, gridStart, middleOfGridStartAndEnd, distanceBetweenThreeGridLines);
+        g.drawLine(gridStart, middleOfGridStartAndEnd, distanceBetweenThreeGridLines, middleOfGridStartAndEnd);
 
-        g.drawLine(400, 700, 400, 500);
-        g.drawLine(700, 400, 500, 400);
+        g.drawLine(middleOfGridStartAndEnd, gridEnd, middleOfGridStartAndEnd, oppositePositionBetweenThreeGridLines);
+        g.drawLine(gridEnd, middleOfGridStartAndEnd, oppositePositionBetweenThreeGridLines, middleOfGridStartAndEnd);
 
         for (Stone stone: allStones) {
             stone.getIcon().paintIcon(this, g, (int) stone.getPoint().getX(), (int) stone.getPoint().getY());

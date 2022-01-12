@@ -12,5 +12,6 @@ public enum GameEventMethod {
     IllegalMove,
     PlaceStone,
     RemoveStone,
+    GameOver,
     MoveStone
 }

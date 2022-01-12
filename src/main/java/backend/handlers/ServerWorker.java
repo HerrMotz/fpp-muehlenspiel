@@ -1,10 +1,9 @@
 package backend.handlers;
 
 import backend.Server;
+import backend.logic.Game;
 import backend.logic.Stone;
-import interfaces.GameEvent;
-import interfaces.GameEventMethod;
-import interfaces.IllegalMoveException;
+import interfaces.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -108,6 +107,14 @@ public class ServerWorker extends Thread {
                             arguments[0],
                             arguments[1]
                     ));
+
+                    if (server.getGame().getPhase() == GamePhase.GAME_OVER) {
+                        server.broadcast(new GameEvent(
+                                GameEventMethod.GameOver,
+                                -1,
+                                server.getGame().getStatus()
+                        ));
+                    }
                 }
                 case MoveStone -> {
                     server.getGame().moveStoneCheckTurn(

@@ -9,8 +9,8 @@ import java.awt.*;
 public class GameFrame extends JFrame {
     GamePanel gamePanel;
 
-    public static final int SCREEN_WIDTH = 800;
-    public static final int SCREEN_HEIGHT = 800;
+    public static final int SCREEN_WIDTH = 820;
+    public static final int SCREEN_HEIGHT = 820;
 
     public GameFrame(DebugFrame debugFrame, Game game) {
         gamePanel = new GamePanel(debugFrame, game);

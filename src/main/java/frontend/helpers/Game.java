@@ -146,8 +146,8 @@ public class Game {
         return !lastMoveByColour == GameInterface.COLOUR_WHITE ? "White" : "Black";
     }
 
-    public boolean getOtherPlayer() {
-        return lastMoveByColour;
+    public String getOtherPlayerAsString() {
+        return lastMoveByColour == GameInterface.COLOUR_WHITE ? "White" : "Black";
     }
 
     public Integer getStonesInInventory(boolean colour) {
