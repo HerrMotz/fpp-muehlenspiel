@@ -9,10 +9,9 @@ import java.io.Serializable;
 
 public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
-    private Point currentPoint;
-    private Point previousPoint;
+    private final Point currentPoint;
 
-    private Point dragStartPoint;
+    private final Point dragStartPoint;
     private boolean isBeingDragged = false;
 
     private final boolean colour;
@@ -30,10 +29,12 @@ public class Stone implements StoneInterface, Serializable {
         }
 
         currentPoint = new Point(xPos, yPos);
-        previousPoint = new Point(xPos, yPos);
+        dragStartPoint = currentPoint;
     }
 
     public boolean contains(Point point) {
+        System.out.println(currentPoint);
+
         Point bottomRightPoint = new Point(
                 (int)(currentPoint.getX() + getIcon().getIconWidth()),
                 (int)currentPoint.getY() + getIcon().getIconHeight()
@@ -46,16 +47,11 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public void moveToTopLeftCorner(int xPos, int yPos) {
-        this.getCurrentPoint().move(xPos, yPos);
-        this.setPreviousPoint(this.getCurrentPoint());
+        this.getCurrentPoint().setLocation(xPos, yPos);
     }
 
     public void moveToCenter(int xPos, int yPos) {
         moveToTopLeftCorner(xPos - this.getStoneWidth()/2, yPos - this.getStoneHeight()/2);
-    }
-
-    public boolean hasBeenDragged() {
-        return previousPoint == null;
     }
 
     public ImageIcon getIcon() {
@@ -64,14 +60,6 @@ public class Stone implements StoneInterface, Serializable {
 
     public Point getCurrentPoint() {
         return currentPoint;
-    }
-
-    public Point getPreviousPoint() {
-        return previousPoint;
-    }
-
-    public void setPreviousPoint(Point previousPoint) {
-        this.previousPoint = previousPoint;
     }
 
     public int getStoneHeight() {
@@ -87,7 +75,7 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public void setDragStartPoint(Point dragStartPoint) {
-        this.dragStartPoint = dragStartPoint;
+        this.dragStartPoint.setLocation(dragStartPoint);
     }
 
     public boolean isBeingDragged() {
@@ -106,16 +94,18 @@ public class Stone implements StoneInterface, Serializable {
         return gridPosX;
     }
 
-    public void setGridPosX(int gridPosX) {
-        this.gridPosX = gridPosX;
-    }
-
     public int getGridPosY() {
         return gridPosY;
     }
 
-    public void setGridPosY(int gridPosY) {
-        moveToCenter(currentPoint.x, gridPosY);
+    public void setGridPositions(int gridPosX, int gridPosY) {
+        this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
+        moveToCenter(100 + 100 * gridPosX, 100 + 100 * gridPosY);
+    }
+
+    public void resetToDragStart() {
+        moveToTopLeftCorner(getDragStartPoint().x, getDragStartPoint().y);
+        setBeingDragged(false);
     }
 }
