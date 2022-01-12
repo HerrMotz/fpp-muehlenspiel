@@ -31,25 +31,25 @@ public class Game {
         }
     }
 
-    public Integer getStonesInInventory(boolean colour) {
+    public synchronized Integer getStonesInInventory(boolean colour) {
         if (colour == GameInterface.COLOUR_WHITE) return whiteStonesInInventory;
         if (colour == GameInterface.COLOUR_BLACK) return blackStonesInInventory;
         throw new IllegalArgumentException("The given colour does not exist");
     }
 
-    public Integer getStonesOnGrid(boolean colour) {
+    public synchronized Integer getStonesOnGrid(boolean colour) {
         if (colour == GameInterface.COLOUR_WHITE) return whiteStonesOnTheGrid;
         if (colour == GameInterface.COLOUR_BLACK) return blackStonesOnTheGrid;
         throw new IllegalArgumentException("The given colour does not exist");
     }
 
-    public Boolean isColourInJumpPhase(boolean colour) {
+    public synchronized Boolean isColourInJumpPhase(boolean colour) {
         if (colour == GameInterface.COLOUR_WHITE) return whiteInJumpPhase;
         if (colour == GameInterface.COLOUR_BLACK) return blackInJumpPhase;
         throw new IllegalArgumentException("The given colour does not exist");
     }
 
-    private void takeStoneFromInventory(boolean colour) {
+    private synchronized void takeStoneFromInventory(boolean colour) {
         if (colour == GameInterface.COLOUR_WHITE && whiteStonesInInventory > 0) {
             whiteStonesInInventory--;
             whiteStonesOnTheGrid++;
@@ -63,15 +63,18 @@ public class Game {
 
     }
 
-    private void checkTurns(boolean moveByColour) throws IllegalMoveException {
-        if (moveByColour == lastMoveByColour) throw new IllegalMoveException("It's the other player's turn.");
+    private synchronized void checkTurns(boolean moveByColour) throws IllegalMoveException {
+        if (moveByColour == lastMoveByColour)
+            throw new IllegalMoveException("It's the other player's turn.");
     }
 
-    private void changeTurns(boolean moveByColour) {
-        lastMoveByColour = moveByColour;
+    private synchronized  void changeTurns() {
+        lastMoveByColour = !lastMoveByColour;
     }
 
-    public void placeStone(int posX, int posY, StoneInterface stone) throws IllegalMoveException {
+    public synchronized void placeStone(boolean moveByColour, int posX, int posY, StoneInterface stone) throws IllegalMoveException {
+        checkTurns(moveByColour);
+
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone "+ this.getCurrentPlayer() +" before you can make another move.");
         }
@@ -79,16 +82,16 @@ public class Game {
             throw new IllegalMoveException("The game is currently not in the place phase.");
         }
 
-        checkTurns(stone.getColour());
+        boolean colour = stone.getColour();
+        checkTurns(colour);
 
-
-        if (getStonesInInventory(stone.getColour()) > 0) {
+        if (getStonesInInventory(colour) > 0) {
             grid.placeStone(posX, posY, stone);
-            takeStoneFromInventory(stone.getColour());
-            changeTurns(stone.getColour());
+            takeStoneFromInventory(colour);
+            changeTurns();
 
             if (
-                stone.getColour() == firstMoveByColour
+                colour == firstMoveByColour
                 && (firstMoveByColour == GameInterface.COLOUR_BLACK && blackStonesInInventory == 0)
                 || (firstMoveByColour == GameInterface.COLOUR_WHITE && whiteStonesInInventory == 0)
             ) {
@@ -103,7 +106,7 @@ public class Game {
         }
     }
 
-    public boolean doesColorHavePossibleMoves(boolean colour) {
+    public synchronized boolean doesColorHavePossibleMoves(boolean colour) {
         for (int y = 0; y < Grid.LIMIT_Y; y++) {
             for (int x = 0; x < Grid.LIMIT_X; x++) {
                 try {
@@ -122,7 +125,7 @@ public class Game {
         return false;
     }
 
-    public boolean areAllStonesInAMill(boolean colour) {
+    public synchronized boolean areAllStonesInAMill(boolean colour) {
         for (int y = 0; y < Grid.LIMIT_Y; y++) {
             for (int x = 0; x < Grid.LIMIT_X; x++) {
                 try {
@@ -138,7 +141,9 @@ public class Game {
         return true;
     }
 
-    public void moveStone(int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+    public synchronized void moveStone(boolean moveByColour, int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException {
+        checkTurns(moveByColour);
+
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone "+ this.getCurrentPlayer() +" before you can make another move.");
         }
@@ -157,11 +162,11 @@ public class Game {
         if (whiteInJumpPhase && field.getStone().getColour() == GameInterface.COLOUR_WHITE
                 || blackInJumpPhase && field.getStone().getColour() == GameInterface.COLOUR_BLACK) {
             grid.jumpStone(posX, posY, toPosX, toPosY);
-            changeTurns(colour);
+            changeTurns();
 
         } else if (grid.areFieldsAdjacent(posX, posY, toPosX, toPosY)) {
             grid.moveStoneToAdjacentField(posX, posY, toPosX, toPosY);
-            changeTurns(colour);
+            changeTurns();
 
         } else {
             throw new IllegalMoveException("The fields are not adjacent to each other.");
@@ -172,9 +177,12 @@ public class Game {
         }
     }
 
-    public void removeStone(int posX, int posY) throws IllegalMoveException {
+    public synchronized void removeStone(boolean moveByColour, int posX, int posY) throws IllegalMoveException {
+        checkTurns(!moveByColour);
+
         if (thereIsAMill) {
             Field field = grid.getField(posX, posY);
+            System.out.println(field.getStone().getColour());
             if (field.getStone().getColour() == lastMoveByColour) {
                 throw new IllegalMoveException("You may not remove one of your own stones");
             } else {
@@ -225,19 +233,19 @@ public class Game {
         grid.checkValidityOfFieldPosition(posX, posY);
     }
 
-    public boolean getCurrentPlayer() {
+    public synchronized boolean getCurrentPlayer() {
         return !lastMoveByColour;
     }
 
-    public boolean getOtherPlayer() {
+    public synchronized boolean getOtherPlayer() {
         return lastMoveByColour;
     }
 
-    public GamePhase getPhase() {
+    public synchronized GamePhase getPhase() {
         return currentPhase;
     }
 
-    public boolean isInMill(int posX, int posY) {
+    public synchronized boolean isInMill(int posX, int posY) {
         Field field;
         try {
             field = grid.getField(posX, posY);
@@ -262,16 +270,29 @@ public class Game {
         return false;
     }
 
-    public boolean isThereAMill() {
+    public synchronized boolean isThereAMill() {
         return thereIsAMill;
     }
 
-    public boolean isStoneLegalToRemove(int posX, int posY) throws IllegalMoveException {
+    public synchronized boolean isStoneLegalToRemove(int posX, int posY) throws IllegalMoveException {
         Field field;
         field = grid.getField(posX, posY);
         if (field.isEmpty()) throw new IllegalMoveException("There is no stone at the given field, which may be removed");
 
         return !isInMill(posX, posY) || areAllStonesInAMill(field.getStone().getColour());
+    }
+
+    public synchronized GameStatus getStatus() {
+        return new GameStatus(
+                getPhase(),
+                isThereAMill(),
+                whiteStonesInInventory,
+                blackStonesInInventory,
+                whiteStonesOnTheGrid,
+                blackStonesOnTheGrid,
+                whiteInJumpPhase,
+                blackInJumpPhase
+        );
     }
 
     @Override

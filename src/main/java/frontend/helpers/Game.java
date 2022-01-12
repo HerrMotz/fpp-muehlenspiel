@@ -42,6 +42,8 @@ public class Game {
         currentPhase = GamePhase.ABORTED;
     }
 
+    public void swapMoves() { lastMoveByColour = !lastMoveByColour; }
+
     public String getMyColourAsString() {
         if (myColour == GameInterface.COLOUR_WHITE) {
             return "White";
@@ -50,7 +52,7 @@ public class Game {
         }
     }
 
-    public void placeStone(int reference, int posX, int posY, StoneInterface stone) throws IllegalMoveException, IOException {
+    public void placeStone(int reference, int posX, int posY, boolean colour) throws IllegalMoveException, IOException {
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone " + this.getCurrentPlayerAsString());
         }
@@ -58,9 +60,10 @@ public class Game {
         client.emit(new GameEvent(
                 GameEventMethod.PlaceStone,
                 reference,
+                null,
                 posX,
                 posY,
-                stone
+                colour
         ));
     }
 
@@ -72,6 +75,7 @@ public class Game {
         client.emit(new GameEvent(
                 GameEventMethod.RemoveStone,
                 reference,
+                null,
                 posX,
                 posY
         ));
@@ -85,6 +89,7 @@ public class Game {
         client.emit(new GameEvent(
                 GameEventMethod.MoveStone,
                 reference,
+                null,
                 posX,
                 posY,
                 toPosX,
@@ -164,5 +169,22 @@ public class Game {
         if (colour == GameInterface.COLOUR_WHITE) return whiteInJumpPhase;
         if (colour == GameInterface.COLOUR_BLACK) return blackInJumpPhase;
         throw new IllegalArgumentException("The given colour does not exist");
+    }
+
+    public void setStatus(GameStatus gameStatus) {
+        if (gameStatus != null) {
+            currentPhase = gameStatus.currentPhase;
+
+            thereIsAMill = gameStatus.isThereAMill;
+
+            whiteStonesInInventory = gameStatus.whiteStonesInInventory;
+            blackStonesInInventory = gameStatus.blackStonesInInventory;
+
+            whiteStonesOnTheGrid = gameStatus.whiteStonesOnTheGrid;
+            blackStonesOnTheGrid = gameStatus.blackStonesOnTheGrid;
+
+            whiteInJumpPhase = gameStatus.whiteInJumpPhase;
+            blackInJumpPhase = gameStatus.blackInJumpPhase;
+        }
     }
 }
