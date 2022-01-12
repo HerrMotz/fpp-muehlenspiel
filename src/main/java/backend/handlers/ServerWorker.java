@@ -79,7 +79,7 @@ public class ServerWorker extends Thread {
                         null
                 ));
                 case PlaceStone -> {
-                    server.getGame().placeStone(
+                    server.getGame().placeStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1],
@@ -95,7 +95,7 @@ public class ServerWorker extends Thread {
                     ));
                 }
                 case RemoveStone -> {
-                    server.getGame().removeStone(
+                    server.getGame().removeStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1]
@@ -110,7 +110,7 @@ public class ServerWorker extends Thread {
                     ));
                 }
                 case MoveStone -> {
-                    server.getGame().moveStone(
+                    server.getGame().moveStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1],
