@@ -293,8 +293,6 @@ public class GamePanel extends JPanel implements ActionListener {
     private class DragListener extends MouseMotionAdapter {
         @Override
         public void mouseDragged(MouseEvent e) {
-            System.out.println("Mouse Dragged");
-
             if (currentlyClickedStone != null) {
                 currentlyClickedStone.moveToCenter((int)e.getPoint().getX(), (int)e.getPoint().getY());
             }
