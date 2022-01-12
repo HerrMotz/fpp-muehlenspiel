@@ -77,6 +77,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     Object[] arguments = gameEvent.getArguments();
                     GameStatus gameStatus = gameEvent.getGameStatus();
                     int reference = gameEvent.getReference();
+                    game.setStatus(gameStatus);
 
                     errorMessage = "";
 
@@ -111,6 +112,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case PlaceStone -> {
                             Stone referencedStone = allStones.get(reference);
+                            referencedStone.resetForNewDrag();
 
                             int xPos = (int) arguments[0];
                             int yPos = (int) arguments[1];
@@ -137,18 +139,18 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case MoveStone -> {
                             Stone referencedStone = allStones.get(reference);
+                            referencedStone.resetForNewDrag();
 
-                            int xPos = (int) arguments[0];
-                            int yPos = (int) arguments[1];
+                            int toXPos = (int) arguments[2];
+                            int toYPos = (int) arguments[3];
 
-                            referencedStone.setGridPositions(xPos, yPos);
+                            referencedStone.setGridPositions(toXPos, toYPos);
 
                             game.swapMoves();
                         }
                     }
 
                     repaint();
-                    game.setStatus(gameStatus);
 
                 } catch (IOException ignored) {}
                 repaint();
@@ -195,21 +197,16 @@ public class GamePanel extends JPanel implements ActionListener {
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
 
+            // mouseClicked should handle this request, should there be a mill
             if (game.isThereAMill()) return;
 
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
                     currentlyClickedStone = stone;
-
-                    if (!currentlyClickedStone.isBeingDragged()) {
-                        currentlyClickedStone.setDragStartPoint(
-                                new Point(
-                                        (int) currentlyClickedStone.getCurrentPoint().getX(),
-                                        (int) currentlyClickedStone.getCurrentPoint().getY()
-                                )
-                        );
-                        currentlyClickedStone.setBeingDragged(true);
-                    }
+                    currentlyClickedStone.setDragStartPoint(new Point(
+                            (int) currentlyClickedStone.getPoint().getX(),
+                            (int) currentlyClickedStone.getPoint().getY()
+                    ));
                     break;
                 }
             }
@@ -219,6 +216,7 @@ public class GamePanel extends JPanel implements ActionListener {
         public void mouseReleased(MouseEvent e) {
             super.mouseReleased(e);
 
+            // mouseClicked should handle this request, should there be a mill
             if (game.isThereAMill()) return;
 
             for (Stone stone : movableStones) {
@@ -246,11 +244,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                             validPosition.getGridX(),
                                             validPosition.getGridY()
                                     );
-                                    currentlyClickedStone.setBeingDragged(false);
                                 }
-
-                                currentlyClickedStone = null;
-
                             } catch (IllegalMoveException ex) {
                                 ex.printStackTrace();
 
@@ -260,12 +254,12 @@ public class GamePanel extends JPanel implements ActionListener {
                             return;
                         }
                     }
-                    // hier liegt der Fehler
-                    currentlyClickedStone.moveToTopLeftCorner((int) stone.getDragStartPoint().getX(), (int) stone.getDragStartPoint().getY());
-                    stone.setBeingDragged(false);
-                    repaint();
                 }
             }
+
+            currentlyClickedStone.resetToDragStart();
+            currentlyClickedStone = null;
+            repaint();
         }
     }
 
@@ -323,7 +317,7 @@ public class GamePanel extends JPanel implements ActionListener {
         g.drawLine(700, 400, 500, 400);
 
         for (Stone stone: allStones) {
-            stone.getIcon().paintIcon(this, g, (int) stone.getCurrentPoint().getX(), (int) stone.getCurrentPoint().getY());
+            stone.getIcon().paintIcon(this, g, (int) stone.getPoint().getX(), (int) stone.getPoint().getY());
         }
     }
 }

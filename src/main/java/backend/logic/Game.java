@@ -190,6 +190,8 @@ public class Game {
                     boolean colour = field.getStone().getColour();
                     grid.removeStone(posX, posY);
                     thereIsAMill = false;
+
+                    // TODO @herrmotz hattest du deinen Kopf im Arsch? LG stocki
                     if (colour == GameInterface.COLOUR_WHITE) {
                         whiteStonesOnTheGrid--;
                         if (whiteStonesInInventory == 0) {

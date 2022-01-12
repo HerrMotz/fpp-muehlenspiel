@@ -9,9 +9,9 @@ import java.io.Serializable;
 
 public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
-    private final Point currentPoint;
+    private Point point;
 
-    private final Point dragStartPoint;
+    private Point dragStartPoint;
     private boolean isBeingDragged = false;
 
     private final boolean colour;
@@ -28,26 +28,24 @@ public class Stone implements StoneInterface, Serializable {
             icon = new ImageIcon("resources/blackStone60x60.png");
         }
 
-        currentPoint = new Point(xPos, yPos);
-        dragStartPoint = currentPoint;
+        point = new Point(xPos, yPos);
+        dragStartPoint = point;
     }
 
     public boolean contains(Point point) {
-        System.out.println(currentPoint);
-
         Point bottomRightPoint = new Point(
-                (int)(currentPoint.getX() + getIcon().getIconWidth()),
-                (int)currentPoint.getY() + getIcon().getIconHeight()
+                (int)(this.point.getX() + getIcon().getIconWidth()),
+                (int) this.point.getY() + getIcon().getIconHeight()
         );
 
-        return point.getX() >= currentPoint.getX() &&
-                point.getY() >= currentPoint.getY() &&
+        return point.getX() >= this.point.getX() &&
+                point.getY() >= this.point.getY() &&
                 point.getX() <= bottomRightPoint.getX() &&
                 point.getY() <= bottomRightPoint.getY();
     }
 
     public void moveToTopLeftCorner(int xPos, int yPos) {
-        this.getCurrentPoint().setLocation(xPos, yPos);
+        this.getPoint().setLocation(xPos, yPos);
     }
 
     public void moveToCenter(int xPos, int yPos) {
@@ -58,8 +56,8 @@ public class Stone implements StoneInterface, Serializable {
         return icon;
     }
 
-    public Point getCurrentPoint() {
-        return currentPoint;
+    public Point getPoint() {
+        return point;
     }
 
     public int getStoneHeight() {
@@ -70,20 +68,24 @@ public class Stone implements StoneInterface, Serializable {
         return icon.getIconWidth();
     }
 
-    public Point getDragStartPoint() {
-        return dragStartPoint;
-    }
-
     public void setDragStartPoint(Point dragStartPoint) {
-        this.dragStartPoint.setLocation(dragStartPoint);
+        System.out.println("Set Drag Start Point. Is being dragged: " + isBeingDragged);
+        if (!isBeingDragged) {
+            System.out.println("Set drag start point " + dragStartPoint);
+            this.dragStartPoint = dragStartPoint;
+            System.out.println(dragStartPoint);
+            isBeingDragged = true;
+        }
     }
 
-    public boolean isBeingDragged() {
-        return isBeingDragged;
+    public void resetToDragStart() {
+        System.out.println("reset to drag start x:" + dragStartPoint.getX() + " y:" + dragStartPoint.getY());
+        moveToTopLeftCorner(dragStartPoint.x, dragStartPoint.y);
+        isBeingDragged = false;
     }
 
-    public void setBeingDragged(boolean beingDragged) {
-        isBeingDragged = beingDragged;
+    public void resetForNewDrag() {
+        isBeingDragged = false;
     }
 
     public boolean getColour() {
@@ -102,10 +104,5 @@ public class Stone implements StoneInterface, Serializable {
         this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
         moveToCenter(100 + 100 * gridPosX, 100 + 100 * gridPosY);
-    }
-
-    public void resetToDragStart() {
-        moveToTopLeftCorner(getDragStartPoint().x, getDragStartPoint().y);
-        setBeingDragged(false);
     }
 }

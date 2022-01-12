@@ -1,5 +1,6 @@
-package backend;
+package backend.handlers;
 
+import backend.Server;
 import backend.logic.Stone;
 import interfaces.GameEvent;
 import interfaces.GameEventMethod;
@@ -137,6 +138,12 @@ public class ServerWorker extends Thread {
 
         } catch (IllegalMoveException e) {
             e.printStackTrace();
+
+            if (event.getMethod() == GameEventMethod.RemoveStone) {
+                // The stone should not be put back to the drag start point
+                reference = -1;
+            }
+
             emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     reference,

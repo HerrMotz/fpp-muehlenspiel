@@ -1,5 +1,6 @@
 package backend;
 
+import backend.handlers.ServerWorker;
 import backend.logic.Game;
 import interfaces.GameEvent;
 import interfaces.GameEventMethod;
@@ -32,9 +33,8 @@ public class Server extends Thread {
             //noinspection InfiniteLoopStatement
             while (true) {
                 if (serverWorkers.size() < 2) {
+                    System.out.println("accepting");
                     Socket clientSocket = serverSocket.accept();
-                    //noinspection BusyWait
-                    Thread.sleep(1000);
                     System.out.println("Test");
 
                     ServerWorker serverWorker = new ServerWorker(this, clientSocket);
@@ -56,9 +56,14 @@ public class Server extends Thread {
                         for (Map.Entry<ServerWorker, Boolean> entry : playerColours.entrySet()) {
                             entry.getKey().emit(new GameEvent(
                                     GameEventMethod.GameStart,
+                                    -1,
+                                    game.getStatus(),
                                     entry.getValue(),
                                     game.getCurrentPlayer()
                             ));
+
+                            // Give the ServerWorker / Client Handler the player's colour for validation.
+                            entry.getKey().setMyColour(entry.getValue());
                         }
                     }
                 }
@@ -69,15 +74,18 @@ public class Server extends Thread {
             System.err.println("Could not start game! There is an error in the code.");
             e.printStackTrace();
             System.exit(-1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
     public void broadcast(GameEvent event) {
+        System.out.println("Broadcast");
         for (ServerWorker serverWorker : serverWorkers) {
+            System.out.println("Broadcasting 1");
             serverWorker.emit(event);
         }
+        System.out.println("Broadcasting 2");
+
+        System.out.println(getServerWorkers());
     }
 
     public HashSet<ServerWorker> getServerWorkers() {
@@ -87,10 +95,13 @@ public class Server extends Thread {
     public void removeServerWorker(ServerWorker serverWorker) {
         serverWorkers.remove(serverWorker);
         System.out.println("Client count: " + serverWorkers.size());
-        if (serverWorkers.size() < 2) {
-            broadcast(new GameEvent(GameEventMethod.GameAborted, "Other player disconnected"));
-        } else {
-            broadcast(new GameEvent(GameEventMethod.ClientDisconnect, serverWorker.getName()));
+        if (serverWorkers.size() > 0) {
+            broadcast(new GameEvent(
+                    GameEventMethod.GameAborted,
+                    -1,
+                    game.getStatus(),
+                    "Other player disconnected"
+            ));
         }
     }
 
