@@ -10,6 +10,14 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 
+/**
+ * Nine men's morris - Game Client
+ *
+ * starts GUI & Socket connection
+ *
+ * @author Max Stock, Daniel Motz
+ * @version 1.0
+ */
 public class Client {
     private final String serverHost;
     private final int serverPort;
@@ -22,6 +30,10 @@ public class Client {
         this.serverPort = serverPort;
     }
 
+    /**
+     * Connect the client's socket to a given server
+     * @return whether the connection was successful
+     */
     public boolean connect() {
         try {
             socket = new Socket(serverHost, serverPort);
@@ -36,6 +48,13 @@ public class Client {
         }
     }
 
+    /**
+     * Send a game event via the client's socket
+     * Uses Java's object output stream
+     *
+     * @param event GameEvent, e.g. a move by the player. Contains a GameMethod (which kind of move was made) and parameters (to which field, from which field etc.)
+     * @throws IOException Should there be an issue with the socket connection (e.g. closed / unavailable)
+     */
     public void emit(GameEvent event) throws IOException {
         System.out.println("[Emit] " + event.getMethod() + ": " + Arrays.toString(event.getArguments()));
         objectOutputStream.flush();
@@ -46,6 +65,12 @@ public class Client {
         return objectInputStream;
     }
 
+    /**
+     * Starts a client
+     * spins up a game window, a debug window and a SocketListener for game events emitted by the server.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         Client client = new Client("localhost", 2302);
         Game game = new Game(client);

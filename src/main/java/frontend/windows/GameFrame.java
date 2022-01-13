@@ -6,6 +6,9 @@ import frontend.panels.GamePanel;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Frame for the Game panel
+ */
 public class GameFrame extends JFrame {
     GamePanel gamePanel;
 

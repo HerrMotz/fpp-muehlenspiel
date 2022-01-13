@@ -17,7 +17,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/**
+ * Game Panel
+ *
+ * This is the main window of the game.
+ * Here the player can see the game's board, make moves, see error messages when
+ * an invalid has been made and whose turn it is.
+ */
 public class GamePanel extends JPanel implements ActionListener {
+    // GUI Drawing statics
     public static final int inventoryStonesStartY = 100;
     public static final int inventoryStonesOffsetX = 10;
     public static final int inventoryStonesOffsetY = 70;
@@ -42,10 +50,12 @@ public class GamePanel extends JPanel implements ActionListener {
     public static final int indicatorCircleDiameter = 30;
     public static final int indicatorCircleAroundStoneDiameter = 80;
 
-    private ArrayList<Stone> allStones = new ArrayList<>();
-    private ArrayList<Stone> movableStones = new ArrayList<>();
-    private ArrayList<Stone> placedStones = new ArrayList<>();
-    private HashSet<FieldPosition> validPositions = new HashSet<>();
+    // Collections to store all game elements
+    // allStones is drawn at the very bottom of method repaint()
+    private ArrayList<Stone> allStones;
+    private ArrayList<Stone> movableStones;
+    private ArrayList<Stone> placedStones;
+    private HashSet<FieldPosition> validPositions;
 
     private final Client client;
     private final Game game;
@@ -60,6 +70,9 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final double dropZoneRadius = 30;
     private final DebugFrame debugFrame;
 
+    /**
+     * Starts a fresh game board for a new game.
+     */
     public void initNewGame() {
         ArrayList<Stone> whiteStones = new ArrayList<>();
         ArrayList<Stone> blackStones = new ArrayList<>();
@@ -90,6 +103,12 @@ public class GamePanel extends JPanel implements ActionListener {
         movableStones.addAll(allStones);
     }
 
+    /**
+     * Constructor
+     *
+     * @param debugFrame the window for the DebugPanel. Required to trigger a repaint of the debug panel when there is a game event.
+     * @param game Helper class to manage the communication with the server.
+     */
     public GamePanel(DebugFrame debugFrame, Game game) {
         super();
 
@@ -289,8 +308,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                     game.placeStone(
                                             allStones.indexOf(stone),
                                             validPosition.getGridX(),
-                                            validPosition.getGridY(),
-                                            stone.getColour()
+                                            validPosition.getGridY()
                                     );
                                 } else {
                                     // MOVE_PHASE and JUMP_PHASE have identical parameters. Everything else is done in backend.logic.Game
@@ -303,7 +321,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                     );
                                 }
                             } catch (IllegalMoveException ex) {
-                                ex.printStackTrace();
+                                errorMessage = ex.getMessage();
 
                             } catch (IOException ex) {
                                 ex.printStackTrace();
@@ -419,8 +437,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
 
         // This draws all stones on the grid by iterating the allStones set
-        for (Stone stone: allStones) {
-            stone.getIcon().paintIcon(this, g, (int) stone.getPoint().getX(), (int) stone.getPoint().getY());
+        if (allStones != null) {
+            for (Stone stone : allStones) {
+                stone.getIcon().paintIcon(this, g, (int) stone.getPoint().getX(), (int) stone.getPoint().getY());
+            }
         }
 
         // This draws the indicator for the last move

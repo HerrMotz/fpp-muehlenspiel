@@ -56,7 +56,7 @@ public class Game {
         }
     }
 
-    public void placeStone(int reference, int posX, int posY, boolean colour) throws IllegalMoveException, IOException {
+    public void placeStone(int reference, int posX, int posY) throws IllegalMoveException, IOException {
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone " + this.getCurrentPlayerAsString());
         }
@@ -66,8 +66,7 @@ public class Game {
                 reference,
                 null,
                 posX,
-                posY,
-                colour
+                posY
         ));
     }
 

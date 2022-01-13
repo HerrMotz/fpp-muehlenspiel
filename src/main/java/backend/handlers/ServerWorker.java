@@ -75,7 +75,7 @@ public class ServerWorker extends Thread {
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1],
-                            new Stone((Boolean) arguments[2])
+                            new Stone(myColour)
                     );
 
                     server.broadcast(new GameEvent(
