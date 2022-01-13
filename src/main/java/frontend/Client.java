@@ -52,8 +52,9 @@ public class Client {
 
         if (client.connect()) {
             Runnable gui = () -> {
-                DebugFrame debugFrame = new DebugFrame(game, true);
-                GameFrame gameFrame = new GameFrame(debugFrame, game);
+                 DebugFrame debugFrame = new DebugFrame(game, true);
+                 GameFrame gameFrame = new GameFrame(debugFrame, game);
+//                GameFrame gameFrame = new GameFrame(null, game);
             };
 
             SwingUtilities.invokeLater(gui);

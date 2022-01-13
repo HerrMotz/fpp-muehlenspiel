@@ -83,7 +83,7 @@ public class Game {
 
     public void moveStone(int reference, int posX, int posY, int toPosX, int toPosY) throws IllegalMoveException, IOException {
         if (thereIsAMill) {
-            throw new IllegalMoveException("You have to remove a stone " + this.getCurrentPlayerAsString() +" before you can make another move.");
+            throw new IllegalMoveException("You have to remove a stone " + this.getCurrentPlayerAsString() + " before you can make another move.");
         }
 
         client.emit(new GameEvent(

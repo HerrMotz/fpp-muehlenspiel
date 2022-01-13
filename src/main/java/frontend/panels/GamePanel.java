@@ -52,12 +52,13 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final double dropZoneRadius = 30;
     DebugFrame debugFrame;
 
-    public GamePanel(DebugFrame debugFrame, Game game) {
-        super();
-
-        this.debugFrame = debugFrame;
-        this.game = game;
-        this.client = game.getClient();
+    public void initNewGame() {
+        whiteStones = new ArrayList<>();
+        blackStones = new ArrayList<>();
+        allStones = new ArrayList<>();
+        movableStones = new ArrayList<>();
+        placedStones = new ArrayList<>();
+        validPositions = new HashSet<>();
 
         for (int i = 0; i < 9; i++) {
             whiteStones.add(new Stone(GameInterface.COLOUR_WHITE, whiteStonesPosX, inventoryStonesStartY + i * inventoryStonesOffsetY));
@@ -79,6 +80,14 @@ public class GamePanel extends JPanel implements ActionListener {
         allStones.addAll(blackStones);
         allStones.addAll(whiteStones);
         movableStones.addAll(allStones);
+    }
+
+    public GamePanel(DebugFrame debugFrame, Game game) {
+        super();
+
+        this.debugFrame = debugFrame;
+        this.game = game;
+        this.client = game.getClient();
 
         // GUI input event listener
         ClickListener clickListener = new ClickListener();
@@ -121,6 +130,7 @@ public class GamePanel extends JPanel implements ActionListener {
                         }
 
                         case GameStart -> {
+                            initNewGame();
                             game.startGame((Boolean)arguments[0], (Boolean)arguments[1]);
                         }
 
@@ -220,6 +230,7 @@ public class GamePanel extends JPanel implements ActionListener {
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
                     currentlyClickedStone = stone;
+                    System.out.println(currentlyClickedStone);
                     currentlyClickedStone.setDragStartPoint(new Point(
                             (int) currentlyClickedStone.getPoint().getX(),
                             (int) currentlyClickedStone.getPoint().getY()
@@ -277,6 +288,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
                     // There is a stone which the mouse is hovering over, but it
                     // has not been dropped over a dropzone
+
+                    // es liegt
                     currentlyClickedStone.resetToDragStart();
                     repaint();
                 }
@@ -298,7 +311,9 @@ public class GamePanel extends JPanel implements ActionListener {
     public void paint(Graphics g) {
         super.paint(g);
 
-        debugFrame.repaint();
+        if (debugFrame != null) {
+            debugFrame.repaint();
+        }
 
         if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
             g.drawString(

@@ -13,7 +13,7 @@ public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;
     private final Point point;
 
-    private Point dragStartPoint;
+    private volatile Point dragStartPoint;
     private final AtomicBoolean isBeingDragged = new AtomicBoolean(false);
 
     private final boolean colour;
@@ -70,19 +70,20 @@ public class Stone implements StoneInterface, Serializable {
         return icon.getIconWidth();
     }
 
-    public void setDragStartPoint(Point dragStartPoint) {
+    public synchronized void setDragStartPoint(Point dragStartPoint) {
         if (!isBeingDragged.get()) {
             System.out.println("Set Drag Start Point. " + dragStartPoint);
             this.dragStartPoint = dragStartPoint;
-            System.out.println(dragStartPoint);
             isBeingDragged.set(false);
         }
     }
 
-    public void resetToDragStart() {
-        System.out.println("reset to drag start x:" + dragStartPoint.getX() + " y:" + dragStartPoint.getY());
+    public synchronized void resetToDragStart() {
+        Point temp = dragStartPoint;
+        System.out.println("reset to drag start x:" + dragStartPoint.x + " y:" + dragStartPoint.y);
         moveToTopLeftCorner(dragStartPoint.x, dragStartPoint.y);
         isBeingDragged.set(false);
+        dragStartPoint = temp;
     }
 
     public boolean getColour() {
@@ -97,7 +98,7 @@ public class Stone implements StoneInterface, Serializable {
         return gridPosY;
     }
 
-    public void setGridPosition(int gridPosX, int gridPosY) {
+    public synchronized void setGridPosition(int gridPosX, int gridPosY) {
         System.out.println("setGridPosition x:" + gridPosX + " y:" + gridPosY);
         this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
