@@ -44,6 +44,10 @@ public class Game {
 
     public void swapMoves() { lastMoveByColour = !lastMoveByColour; }
 
+    public boolean getMyColour() {
+        return myColour;
+    }
+
     public String getMyColourAsString() {
         if (myColour == GameInterface.COLOUR_WHITE) {
             return "White";
@@ -135,7 +139,14 @@ public class Game {
     }
 
     public String getPhaseAsString() {
-        return currentPhase.toString();
+        return switch (getPhase()) {
+            case GAME_OVER -> "Game Over!";
+            case ABORTED -> "Game aborted.";
+            case PLACE_PHASE -> "Place Phase";
+            case MOVE_PHASE -> "Move Phase";
+            case JUMP_PHASE -> "Jump Phase";
+            case WAITING_FOR_PLAYERS -> "Waiting for another player to join...";
+        };
     }
 
     public boolean isItMyTurn() {

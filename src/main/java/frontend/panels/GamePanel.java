@@ -35,26 +35,34 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public static final int stoneOutOfBoundsPos = 1000;
 
-    ArrayList<Stone> whiteStones = new ArrayList<>();
-    ArrayList<Stone> blackStones = new ArrayList<>();
-    ArrayList<Stone> allStones = new ArrayList<>();
-    ArrayList<Stone> movableStones = new ArrayList<>();
-    ArrayList<Stone> placedStones = new ArrayList<>();
-    HashSet<FieldPosition> validPositions = new HashSet<>();
+    public static final int panelBorderThickness = 10;
+    public static final int screenWidthMinusPanelBorderThickness = GameFrame.SCREEN_WIDTH-panelBorderThickness;
+    public static final int screenHeightMinusPanelBorderThickness = GameFrame.SCREEN_HEIGHT-panelBorderThickness;
 
-    Client client;
-    Game game;
+    public static final int indicatorCircleDiameter = 30;
+    public static final int indicatorCircleAroundStoneDiameter = 80;
 
-    String text = "";
-    String errorMessage = "";
+    private ArrayList<Stone> allStones = new ArrayList<>();
+    private ArrayList<Stone> movableStones = new ArrayList<>();
+    private ArrayList<Stone> placedStones = new ArrayList<>();
+    private HashSet<FieldPosition> validPositions = new HashSet<>();
 
-    Stone currentlyClickedStone;
+    private final Client client;
+    private final Game game;
+
+    private String text = "";
+    private String errorMessage = "";
+
+    private Stone currentlyClickedStone;
+    private Point indicatorOfLastMove;
+    private Point indicatorOfMovedStone;
+
     private static final double dropZoneRadius = 30;
-    DebugFrame debugFrame;
+    private final DebugFrame debugFrame;
 
     public void initNewGame() {
-        whiteStones = new ArrayList<>();
-        blackStones = new ArrayList<>();
+        ArrayList<Stone> whiteStones = new ArrayList<>();
+        ArrayList<Stone> blackStones = new ArrayList<>();
         allStones = new ArrayList<>();
         movableStones = new ArrayList<>();
         placedStones = new ArrayList<>();
@@ -139,6 +147,8 @@ public class GamePanel extends JPanel implements ActionListener {
                             game.abortGame();
                         }
 
+                        case GameOver -> movableStones = new ArrayList<>();
+
                         case PlaceStone -> {
                             Stone referencedStone = allStones.get(reference);
 
@@ -147,6 +157,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
                             referencedStone.setGridPosition(xPos, yPos);
 
+                            indicatorOfMovedStone = referencedStone.getPoint();
+                            System.out.println("indicator " + indicatorOfMovedStone);
+
                             movableStones.remove(referencedStone);
                             placedStones.add(referencedStone);
 
@@ -154,31 +167,45 @@ public class GamePanel extends JPanel implements ActionListener {
                                 movableStones.addAll(placedStones);
                             }
 
-                            game.swapMoves();
+                            if (!game.isThereAMill()) {
+                                game.swapMoves();
+                            }
                         }
 
                         case RemoveStone -> {
                             Stone referencedStone = allStones.get(reference);
+                            indicatorOfMovedStone = referencedStone.getPoint();
+                            System.out.println("indicator" + indicatorOfMovedStone);
 
                             movableStones.remove(referencedStone);
                             placedStones.remove(referencedStone);
 
                             referencedStone.moveToTopLeftCorner(stoneOutOfBoundsPos, stoneOutOfBoundsPos);
+
+                            game.swapMoves();
                         }
 
                         case MoveStone -> {
                             Stone referencedStone = allStones.get(reference);
+                            indicatorOfMovedStone = referencedStone.getPoint();
+                            System.out.println("indicator" + indicatorOfMovedStone);
 
-                            int toXPos = (int) arguments[2];
-                            int toYPos = (int) arguments[3];
+                            int posX = (int) arguments[0];
+                            int posY = (int) arguments[1];
+                            int toPosX = (int) arguments[2];
+                            int toPosY = (int) arguments[3];
 
-                            referencedStone.setGridPosition(toXPos, toYPos);
+                            referencedStone.setGridPosition(toPosX, toPosY);
+                            indicatorOfLastMove = new FieldPosition(posX, posY);
 
-                            game.swapMoves();
+                            if (!game.isThereAMill()) {
+                                game.swapMoves();
+                            }
                         }
                     }
                 } catch (IOException ignored) {}
 
+                System.out.println("currentlyClickedStone null");
                 currentlyClickedStone = null;
                 repaint();
             }
@@ -230,7 +257,8 @@ public class GamePanel extends JPanel implements ActionListener {
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
                     currentlyClickedStone = stone;
-                    System.out.println(currentlyClickedStone);
+                    System.out.println("[CurrentlyClickedStone] New currently clicked stone" + currentlyClickedStone.hashCode());
+
                     currentlyClickedStone.setDragStartPoint(new Point(
                             (int) currentlyClickedStone.getPoint().getX(),
                             (int) currentlyClickedStone.getPoint().getY()
@@ -267,7 +295,7 @@ public class GamePanel extends JPanel implements ActionListener {
                                 } else {
                                     // MOVE_PHASE and JUMP_PHASE have identical parameters. Everything else is done in backend.logic.Game
                                     game.moveStone(
-                                            allStones.indexOf(stone),
+                                            allStones.indexOf(currentlyClickedStone), // ICH HASSE MEIN LEBEN DAFÜR HABE ICH 4 H gebraucht
                                             currentlyClickedStone.getGridPosX(),
                                             currentlyClickedStone.getGridPosY(),
                                             validPosition.getGridX(),
@@ -291,9 +319,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
                     // es liegt
                     currentlyClickedStone.resetToDragStart();
-                    repaint();
+                    currentlyClickedStone = null;
                 }
             }
+            repaint();
         }
     }
 
@@ -324,6 +353,15 @@ public class GamePanel extends JPanel implements ActionListener {
             );
         }
 
+        if (game.isItMyTurn()) {
+            g.setColor(Color.GREEN);
+            g.fillRect(0, 0, GameFrame.SCREEN_WIDTH, panelBorderThickness);
+            g.fillRect(0, 0, panelBorderThickness, GameFrame.SCREEN_HEIGHT);
+            g.fillRect(screenWidthMinusPanelBorderThickness, panelBorderThickness, panelBorderThickness, GameFrame.SCREEN_HEIGHT);
+            g.fillRect(0, screenHeightMinusPanelBorderThickness, GameFrame.SCREEN_WIDTH, panelBorderThickness);
+            g.setColor(Color.BLACK);
+        }
+
         if (errorMessage.equals("It's the other player's turn.")
             && game.isItMyTurn()) {
             errorMessage = "Please use stones of your own colour to make a move.";
@@ -332,10 +370,14 @@ public class GamePanel extends JPanel implements ActionListener {
         g.drawString(errorMessage, 350, 70);
 
         if (game.isThereAMill()) {
-            text = (game.isThereAMill() ? "There is a mill" : "")
-                    + " A stone of player "
-                    + game.getCurrentPlayerAsString()
-                    + " may be removed. Click the stone to do so.";
+            text = "There is a mill";
+            if (game.getCurrentPlayerAsString().equals(game.getMyColourAsString())) {
+                text += " A stone of player "
+                        + game.getOtherPlayerAsString()
+                        + " may be removed. Click the stone to do so.";
+            } else {
+                text = "Your opponent may remove one of your stones.";
+            }
 
         } else if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
             text = "It's "
@@ -343,14 +385,22 @@ public class GamePanel extends JPanel implements ActionListener {
                     + " turn.";
         }
 
+        g.drawString(text, 350, 50);
+
+        String phase;
+
         if (game.getPhase() == GamePhase.GAME_OVER) {
+            phase = "Game Over";
             text = "GAME OVER LOL. "
                     + game.getOtherPlayerAsString()
                     + " won.";
+        } else if (game.isColourInJumpPhase(game.getMyColour())) {
+            phase = "JUMP_PHASE";
+        } else {
+            phase = game.getPhaseAsString();
         }
 
-        g.drawString(text, 350, 50);
-        g.drawString(game.getPhaseAsString(), 350, 25);
+        g.drawString(phase, 350, 25);
 
         for (int i = 0; i < 3; i++) {
             int j = i * distanceBetweenGridLines;
@@ -367,8 +417,39 @@ public class GamePanel extends JPanel implements ActionListener {
         g.drawLine(middleOfGridStartAndEnd, gridEnd, middleOfGridStartAndEnd, oppositePositionBetweenThreeGridLines);
         g.drawLine(gridEnd, middleOfGridStartAndEnd, oppositePositionBetweenThreeGridLines, middleOfGridStartAndEnd);
 
+
+        // This draws all stones on the grid by iterating the allStones set
         for (Stone stone: allStones) {
             stone.getIcon().paintIcon(this, g, (int) stone.getPoint().getX(), (int) stone.getPoint().getY());
+        }
+
+        // This draws the indicator for the last move
+        if (indicatorOfLastMove != null) {
+            g.setColor(Color.ORANGE);
+            g.fillOval(
+                indicatorOfLastMove.x - indicatorCircleDiameter / 2,
+                indicatorOfLastMove.y - indicatorCircleDiameter / 2,
+                indicatorCircleDiameter,
+                indicatorCircleDiameter
+            );
+            g.setColor(Color.BLACK);
+        }
+
+        if (indicatorOfMovedStone != null) {
+            g.setColor(Color.ORANGE);
+            g.drawOval(
+                    indicatorOfMovedStone.x-10,
+                    indicatorOfMovedStone.y-10,
+                    indicatorCircleAroundStoneDiameter,
+                    indicatorCircleAroundStoneDiameter
+            );
+            g.drawOval(
+                    indicatorOfMovedStone.x-20,
+                    indicatorOfMovedStone.y-20,
+                    indicatorCircleAroundStoneDiameter + 20,
+                    indicatorCircleAroundStoneDiameter + 20
+            );
+            g.setColor(Color.BLACK);
         }
     }
 }
