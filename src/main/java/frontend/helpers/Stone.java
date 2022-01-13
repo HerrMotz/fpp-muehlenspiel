@@ -14,7 +14,6 @@ public class Stone implements StoneInterface, Serializable {
     private final Point point;
 
     private volatile Point dragStartPoint;
-    private final AtomicBoolean isBeingDragged = new AtomicBoolean(false);
 
     private final boolean colour;
 
@@ -71,19 +70,13 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public synchronized void setDragStartPoint(Point dragStartPoint) {
-        if (!isBeingDragged.get()) {
-            System.out.println("Set Drag Start Point. " + dragStartPoint);
-            this.dragStartPoint = dragStartPoint;
-            isBeingDragged.set(false);
-        }
+        System.out.println("Set Drag Start Point. " + dragStartPoint);
+        this.dragStartPoint = dragStartPoint;
     }
 
     public synchronized void resetToDragStart() {
-        Point temp = dragStartPoint;
         System.out.println("reset to drag start x:" + dragStartPoint.x + " y:" + dragStartPoint.y);
         moveToTopLeftCorner(dragStartPoint.x, dragStartPoint.y);
-        isBeingDragged.set(false);
-        dragStartPoint = temp;
     }
 
     public boolean getColour() {
@@ -105,7 +98,6 @@ public class Stone implements StoneInterface, Serializable {
         moveToCenter(
         GamePanel.gridStart + GamePanel.distanceBetweenGridLines * gridPosX,
         GamePanel.gridStart + GamePanel.distanceBetweenGridLines * gridPosY);
-        this.dragStartPoint = point;
-        isBeingDragged.set(false);
+        setDragStartPoint(point);
     }
 }

@@ -1,7 +1,6 @@
 package backend.handlers;
 
 import backend.Server;
-import backend.logic.Game;
 import backend.logic.Stone;
 import interfaces.*;
 
@@ -13,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerWorker extends Thread {
     private final Socket socket;
     private final Server server;
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
+    private final ObjectInputStream objectInputStream;
+    private final ObjectOutputStream objectOutputStream;
 
     private boolean running = true;
 
@@ -22,22 +21,16 @@ public class ServerWorker extends Thread {
 
     private final AtomicInteger unavailableCounter = new AtomicInteger(0);
 
-    public ServerWorker(Server server, Socket socket) {
+    public ServerWorker(Server server, Socket socket) throws IOException {
         this.server = server;
         this.socket = socket;
+        objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        objectInputStream = new ObjectInputStream(socket.getInputStream());
     }
 
     @Override
     public void run() {
-        try {
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
-
-            inputHandler();
-        } catch (IOException e) {
-            e.printStackTrace();
-            disconnectHandler();
-        }
+        inputHandler();
     }
 
     public void setMyColour(boolean colour) {
@@ -181,6 +174,7 @@ public class ServerWorker extends Thread {
         try {
             socket.close();
         } catch (IOException ignored) {}
+
         server.removeServerWorker(this);
 
         running = false;

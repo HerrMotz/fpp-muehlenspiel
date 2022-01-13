@@ -9,7 +9,6 @@ import interfaces.IllegalMoveException;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,7 +19,6 @@ public class Server extends Thread {
     private final ConcurrentHashMap<ServerWorker, Boolean> serverWorkers = new ConcurrentHashMap<>();
     private final AtomicInteger serverWorkersSize = new AtomicInteger(0);
     private Game game;
-    private final HashMap<ServerWorker, Boolean> playerColours = new HashMap<>();
 
     public Server(int port) throws IllegalMoveException {
         this.port = port;
