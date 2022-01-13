@@ -129,12 +129,6 @@ public class GamePanel extends JPanel implements ActionListener {
                             game.abortGame();
                         }
 
-                        case GameOver -> {
-                            text = "GAME OVER LOL. "
-                                    + game.getOtherPlayerAsString()
-                                    + " won.";
-                        }
-
                         case PlaceStone -> {
                             Stone referencedStone = allStones.get(reference);
 
@@ -332,6 +326,12 @@ public class GamePanel extends JPanel implements ActionListener {
             text = "It's "
                     + (game.isItMyTurn() ? "your" : (game.getCurrentPlayerAsString() + "'s"))
                     + " turn.";
+        }
+
+        if (game.getPhase() == GamePhase.GAME_OVER) {
+            text = "GAME OVER LOL. "
+                    + game.getOtherPlayerAsString()
+                    + " won.";
         }
 
         g.drawString(text, 350, 50);
