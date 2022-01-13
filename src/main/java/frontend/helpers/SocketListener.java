@@ -1,6 +1,7 @@
 package frontend.helpers;
 
 import interfaces.GameEvent;
+import interfaces.GameEventMethod;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -23,6 +24,10 @@ public class SocketListener extends SwingWorker<Void, Void> {
             try {
                 if (objectInputStream.available() < 1 && unavailableCounter.incrementAndGet() > 1000) {
                     System.out.println("[Client SocketListener] Socket closed");
+                    firePropertyChange("GamEvent", null, new GameEvent(
+                            GameEventMethod.GameAborted, -1, null,
+                            "Connection to server lost."
+                    ));
                     break;
                 }
                 Object event = objectInputStream.readObject();

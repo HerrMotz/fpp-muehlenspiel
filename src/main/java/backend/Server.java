@@ -10,13 +10,15 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends Thread {
     private final int port;
-    private final HashSet<ServerWorker> serverWorkers = new HashSet<>();
+    private final ConcurrentHashMap<ServerWorker, Boolean> serverWorkers = new ConcurrentHashMap<>();
+    private final AtomicInteger serverWorkersSize = new AtomicInteger(0);
     private Game game;
     private final HashMap<ServerWorker, Boolean> playerColours = new HashMap<>();
 
@@ -32,31 +34,28 @@ public class Server extends Thread {
 
             //noinspection InfiniteLoopStatement
             while (true) {
-                if (serverWorkers.size() < 2) {
-                    // DEBUG
-                    System.out.println("accepting");
+                if (serverWorkersSize.get() < 2) {
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Test");
 
                     ServerWorker serverWorker = new ServerWorker(this, clientSocket);
-                    serverWorkers.add(serverWorker);
+                    serverWorkers.put(serverWorker, false);
+                    serverWorkersSize.incrementAndGet();
+
                     serverWorker.start();
 
-                    // DEBUG
                     System.out.println("Connected to: " + clientSocket);
-                    System.out.println("Client count: " + serverWorkers.size());
+                    System.out.println("Client count: " + serverWorkersSize.get());
 
-                    if (serverWorkers.size() == 2) {
+                    if (serverWorkersSize.get() == 2) {
                         // DEBUG
                         System.out.println("Start game");
                         game = new Game(true, .5);
 
-                        Iterator<ServerWorker> iterator = serverWorkers.iterator();
-                        playerColours.put(iterator.next(), false);
-                        playerColours.put(iterator.next(), true);
-
                         // Tell each player his colour, and which colour starts
-                        for (Map.Entry<ServerWorker, Boolean> entry : playerColours.entrySet()) {
+                        AtomicBoolean temp = new AtomicBoolean(false);
+                        serverWorkers.replaceAll((k, v) -> temp.getAndSet(!temp.get()));
+
+                        for (Map.Entry<ServerWorker, Boolean> entry : serverWorkers.entrySet()) {
                             entry.getKey().emit(new GameEvent(
                                     GameEventMethod.GameStart,
                                     -1,
@@ -80,32 +79,20 @@ public class Server extends Thread {
         }
     }
 
-    public void broadcast(GameEvent event) {
-        // DEBUG
-        System.out.println("Broadcast");
-
-        for (ServerWorker serverWorker : serverWorkers) {
-            System.out.println("Broadcasting 1");
-
+    public synchronized void broadcast(GameEvent event) {
+        for (ServerWorker serverWorker : serverWorkers.keySet()) {
             serverWorker.emit(event);
         }
-
-        System.out.println("Broadcasting 2");
-
-        System.out.println(getServerWorkers());
-    }
-
-    public HashSet<ServerWorker> getServerWorkers() {
-        return serverWorkers;
     }
 
     public void removeServerWorker(ServerWorker serverWorker) {
         serverWorkers.remove(serverWorker);
+        serverWorkersSize.decrementAndGet();
 
         // DEBUG
-        System.out.println("Client count: " + serverWorkers.size());
+        System.out.println("Client count: " + serverWorkersSize.get());
 
-        if (serverWorkers.size() > 0) {
+        if (serverWorkersSize.get() > 0) {
             broadcast(new GameEvent(
                     GameEventMethod.GameAborted,
                     -1,
