@@ -1,10 +1,14 @@
-package gui;
+package frontend.windows;
 
-import backend.Game;
+import frontend.helpers.Game;
+import frontend.panels.DebugPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Frame for the Debug panel
+ */
 public class DebugFrame extends JFrame {
     DebugPanel debugPanel;
 

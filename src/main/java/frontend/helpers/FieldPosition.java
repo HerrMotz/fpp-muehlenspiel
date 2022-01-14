@@ -1,4 +1,6 @@
-package gui;
+package frontend.helpers;
+
+import frontend.panels.GamePanel;
 
 import java.awt.*;
 
@@ -7,7 +9,10 @@ public class FieldPosition extends Point {
     int gridY;
 
     public FieldPosition(int x, int y) {
-        super(100 + x*100, 100 + y*100);
+        super(
+        GamePanel.gridStart + x * GamePanel.distanceBetweenGridLines,
+        GamePanel.gridStart + y * GamePanel.distanceBetweenGridLines
+        );
         gridX = x;
         gridY = y;
     }

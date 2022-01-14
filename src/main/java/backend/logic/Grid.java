@@ -1,11 +1,11 @@
-package backend;
+package backend.logic;
 
 import java.util.HashSet;
+import interfaces.GameInterface;
+import interfaces.IllegalMoveException;
+import interfaces.StoneInterface;
 
 public class Grid {
-    public static final boolean COLOUR_BLACK = false;
-    public static final boolean COLOUR_WHITE = true;
-
     public static final int LIMIT_X = 7;
     public static final int LIMIT_Y = 7;
 
@@ -236,12 +236,13 @@ public class Grid {
      * @throws IllegalArgumentException If the position is invalid on the field's grid
      * @throws ArrayIndexOutOfBoundsException If the position is out of bounds for the field's grid
      */
-    public void placeStone(int posX, int posY, Stone stone) throws IllegalMoveException {
+    public void placeStone(int posX, int posY, StoneInterface stone) throws IllegalMoveException {
         checkValidityOfFieldPosition(posX, posY);
 
         if (!getField(posX, posY).isEmpty()) {
             throw new IllegalMoveException("There already is a stone at this position.");
         }
+
         grid[posY][posX].setStone(stone);
     }
 
@@ -268,7 +269,7 @@ public class Grid {
        if (!toField.isEmpty())
             throw new IllegalMoveException("You may only move stones to empty fields.");
 
-       Stone stone = field.getStone();
+       StoneInterface stone = field.getStone();
 
         removeStone(posX, posY);
         placeStone(toPosX, toPosY, stone);
@@ -300,8 +301,8 @@ public class Grid {
                     Field field = getField(x, y);
                     String m = " ";
                     if (field.isEmpty()) m = "o";
-                    else if (field.getStone().getColour() == COLOUR_BLACK) m = "B";
-                    else if (field.getStone().getColour() == COLOUR_WHITE) m = "W";
+                    else if (field.getStone().getColour() == GameInterface.COLOUR_BLACK) m = "B";
+                    else if (field.getStone().getColour() == GameInterface.COLOUR_WHITE) m = "W";
                     stringBuilder.append(m).append(" ");
                 } catch (IllegalMoveException ignored) {
                     stringBuilder.append("  ");

@@ -1,4 +1,4 @@
-package backend;
+package interfaces;
 
 public class IllegalMoveException extends Exception {
     public IllegalMoveException(String message) {

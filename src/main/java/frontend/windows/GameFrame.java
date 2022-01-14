@@ -1,18 +1,23 @@
-package gui;
+package frontend.windows;
 
-import backend.Game;
+import frontend.helpers.Game;
+import frontend.panels.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Frame for the Game panel
+ */
 public class GameFrame extends JFrame {
     GamePanel gamePanel;
 
-    public static final int SCREEN_WIDTH = 800;
-    public static final int SCREEN_HEIGHT = 800;
+    public static final int SCREEN_WIDTH = 820;
+    public static final int SCREEN_HEIGHT = 820;
 
     public GameFrame(DebugFrame debugFrame, Game game) {
         gamePanel = new GamePanel(debugFrame, game);
+
         this.setTitle("Mühle für zwei Spieler");
         this.getContentPane().add(gamePanel, BorderLayout.CENTER);
         this.pack();
