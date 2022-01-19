@@ -184,9 +184,9 @@ public class Game {
                     grid.removeStone(posX, posY);
                     thereIsAMill = false;
 
-                    // TODO @herrmotz hattest du deinen Kopf im Arsch? LG stocki
+                    // TODO rewrite this as a method
                     if (colour == GameInterface.COLOUR_WHITE) {
-                        whiteStonesOnTheGrid--;
+                        whiteStonesOnTheGrid--; // wtf
                         if (whiteStonesInInventory == 0) {
                             if (whiteStonesOnTheGrid <= 3) {
                                 whiteInJumpPhase = true;
@@ -206,7 +206,6 @@ public class Game {
                             }
                         }
                     }
-                    if (blackInJumpPhase && whiteInJumpPhase) currentPhase = GamePhase.JUMP_PHASE;
                 } else {
                     throw new IllegalMoveException("This stone may not be removed.");
                 }
