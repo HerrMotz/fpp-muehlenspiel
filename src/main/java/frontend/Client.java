@@ -47,14 +47,14 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        Client client = new Client("81.201.150.156", 2302);
+        Client client = new Client("localhost", 2302);
         Game game = new Game(client);
 
         if (client.connect()) {
             Runnable gui = () -> {
-                // DebugFrame debugFrame = new DebugFrame(game, true);
-                // GameFrame gameFrame = new GameFrame(debugFrame, game);
-                GameFrame gameFrame = new GameFrame(null, game);
+                DebugFrame debugFrame = new DebugFrame(game, true);
+                GameFrame gameFrame = new GameFrame(debugFrame, game);
+//                GameFrame gameFrame = new GameFrame(null, game);
             };
 
             SwingUtilities.invokeLater(gui);
