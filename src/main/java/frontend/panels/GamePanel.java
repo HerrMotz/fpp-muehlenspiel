@@ -50,6 +50,12 @@ public class GamePanel extends JPanel implements ActionListener {
     public static final int indicatorCircleDiameter = 30;
     public static final int indicatorCircleAroundStoneDiameter = 80;
 
+    public static final int removedStoneCrossSize = 20;
+    public static final int removedStoneCrossDelta = 3;
+    public static final int removedStoneCrossOffset = 30;
+    public static final int removedStoneCrossDelta1 = removedStoneCrossSize - removedStoneCrossDelta;
+    public static final int removedStoneCrossDelta2 = removedStoneCrossSize + removedStoneCrossDelta;
+
     // Collections to store all game elements
     // allStones is drawn at the very bottom of method repaint()
     private ArrayList<Stone> allStones;
@@ -66,6 +72,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private Stone currentlyClickedStone;
     private Point indicatorOfLastMove;
     private Point indicatorOfMovedStone;
+    private Point indicatorOfRemovedStone;
 
     private static final double dropZoneRadius = 30;
     private final DebugFrame debugFrame;
@@ -134,6 +141,9 @@ public class GamePanel extends JPanel implements ActionListener {
                     int reference = gameEvent.getReference();
                     game.setStatus(gameStatus);
 
+                    indicatorOfMovedStone = null;
+                    indicatorOfLastMove = null;
+                    indicatorOfRemovedStone = null;
                     errorMessage = "";
 
                     switch (gameEvent.getMethod()) {
@@ -177,7 +187,6 @@ public class GamePanel extends JPanel implements ActionListener {
                             referencedStone.setGridPosition(xPos, yPos);
 
                             indicatorOfMovedStone = referencedStone.getPoint();
-                            System.out.println("indicator " + indicatorOfMovedStone);
 
                             movableStones.remove(referencedStone);
                             placedStones.add(referencedStone);
@@ -193,8 +202,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case RemoveStone -> {
                             Stone referencedStone = allStones.get(reference);
-                            indicatorOfMovedStone = referencedStone.getPoint();
-                            System.out.println("indicator" + indicatorOfMovedStone);
+
+                            System.out.println(referencedStone.getPoint());
+
+                            indicatorOfRemovedStone = new Point(referencedStone.getPoint());
 
                             movableStones.remove(referencedStone);
                             placedStones.remove(referencedStone);
@@ -207,7 +218,6 @@ public class GamePanel extends JPanel implements ActionListener {
                         case MoveStone -> {
                             Stone referencedStone = allStones.get(reference);
                             indicatorOfMovedStone = referencedStone.getPoint();
-                            System.out.println("indicator" + indicatorOfMovedStone);
 
                             int posX = (int) arguments[0];
                             int posY = (int) arguments[1];
@@ -409,7 +419,7 @@ public class GamePanel extends JPanel implements ActionListener {
         String phase;
 
         if (game.getPhase() == GamePhase.GAME_OVER) {
-            phase = "Game Over";
+            phase = "Game Over" ;
             text = "GAME OVER LOL. "
                     + game.getOtherPlayerAsString()
                     + " won.";
@@ -446,6 +456,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // This draws the indicator for the last move
         if (indicatorOfLastMove != null) {
+            System.out.println("Draw indicator of last move");
             g.setColor(Color.ORANGE);
             g.fillOval(
                 indicatorOfLastMove.x - indicatorCircleDiameter / 2,
@@ -457,6 +468,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         if (indicatorOfMovedStone != null) {
+            System.out.println("Draw indicator of moved stone");
             g.setColor(Color.ORANGE);
             g.drawOval(
                     indicatorOfMovedStone.x-10,
@@ -470,6 +482,47 @@ public class GamePanel extends JPanel implements ActionListener {
                     indicatorCircleAroundStoneDiameter + 20,
                     indicatorCircleAroundStoneDiameter + 20
             );
+            g.setColor(Color.BLACK);
+        }
+
+        if (indicatorOfRemovedStone != null) {
+            g.setColor(Color.RED);
+
+            final int indicatorX = removedStoneCrossOffset + indicatorOfRemovedStone.x;
+            final int indicatorY = removedStoneCrossOffset + indicatorOfRemovedStone.y;
+
+            int[] x = {
+                    indicatorX - removedStoneCrossDelta1,
+                    indicatorX - removedStoneCrossDelta2,
+                    indicatorX + removedStoneCrossDelta1,
+                    indicatorX + removedStoneCrossDelta2
+            };
+
+            int[] y = {
+                    indicatorY - removedStoneCrossDelta2,
+                    indicatorY - removedStoneCrossDelta1,
+                    indicatorY + removedStoneCrossDelta2,
+                    indicatorY + removedStoneCrossDelta1
+            };
+
+            int[] x2 = {
+                    indicatorX + removedStoneCrossDelta1,
+                    indicatorX + removedStoneCrossDelta2,
+                    indicatorX - removedStoneCrossDelta1,
+                    indicatorX - removedStoneCrossDelta2
+            };
+
+            int[] y2 = {
+                    indicatorY - removedStoneCrossDelta2,
+                    indicatorY - removedStoneCrossDelta1,
+                    indicatorY + removedStoneCrossDelta2,
+                    indicatorY + removedStoneCrossDelta1
+            };
+
+            g.fillPolygon(x, y, 4);
+
+            g.fillPolygon(x2, y2, 4);
+
             g.setColor(Color.BLACK);
         }
     }

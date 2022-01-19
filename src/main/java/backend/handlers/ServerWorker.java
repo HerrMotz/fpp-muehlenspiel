@@ -93,6 +93,8 @@ public class ServerWorker extends Thread {
                             (Integer) arguments[1]
                     );
 
+                    // The status send info about the GamePhase, so handling for this
+                    //  event may es well be implemented on the client side.
                     server.broadcast(new GameEvent(
                             GameEventMethod.RemoveStone,
                             reference,
@@ -100,14 +102,6 @@ public class ServerWorker extends Thread {
                             arguments[0],
                             arguments[1]
                     ));
-
-                    if (server.getGame().getPhase() == GamePhase.GAME_OVER) {
-                        server.broadcast(new GameEvent(
-                                GameEventMethod.GameOver,
-                                -1,
-                                server.getGame().getStatus()
-                        ));
-                    }
                 }
                 case MoveStone -> {
                     server.getGame().moveStoneCheckTurn(
