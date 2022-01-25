@@ -129,14 +129,6 @@ public class ServerWorker extends Thread {
                     ));
                 }
             }
-
-            // DEBUG
-            System.out.println("[GameEvent] " + this.getName() + " " + (myColour ? "White" : "Black"));
-            System.out.println(server.getGame());
-            System.out.println(event.getMethod());
-            System.out.println(Arrays.toString(event.getArguments()));
-            System.out.println("It's " + (server.getGame().getCurrentPlayer() ? "White" : "Black") + "'s turn");
-
         } catch (IllegalMoveException e) {
             e.printStackTrace();
 

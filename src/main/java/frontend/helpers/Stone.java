@@ -70,12 +70,10 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public synchronized void setDragStartPoint(Point dragStartPoint) {
-        System.out.println("Set Drag Start Point. " + dragStartPoint);
         this.dragStartPoint = dragStartPoint;
     }
 
     public synchronized void resetToDragStart() {
-        System.out.println("reset to drag start x:" + dragStartPoint.x + " y:" + dragStartPoint.y);
         moveToTopLeftCorner(dragStartPoint.x, dragStartPoint.y);
     }
 
@@ -92,7 +90,6 @@ public class Stone implements StoneInterface, Serializable {
     }
 
     public synchronized void setGridPosition(int gridPosX, int gridPosY) {
-        System.out.println("setGridPosition x:" + gridPosX + " y:" + gridPosY);
         this.gridPosX = gridPosX;
         this.gridPosY = gridPosY;
         moveToCenter(

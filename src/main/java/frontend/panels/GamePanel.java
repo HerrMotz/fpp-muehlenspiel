@@ -203,8 +203,6 @@ public class GamePanel extends JPanel implements ActionListener {
                         case RemoveStone -> {
                             Stone referencedStone = allStones.get(reference);
 
-                            System.out.println(referencedStone.getPoint());
-
                             indicatorOfRemovedStone = new Point(referencedStone.getPoint());
 
                             movableStones.remove(referencedStone);
@@ -234,7 +232,6 @@ public class GamePanel extends JPanel implements ActionListener {
                     }
                 } catch (IOException ignored) {}
 
-                System.out.println("currentlyClickedStone null");
                 currentlyClickedStone = null;
                 repaint();
             }
@@ -283,10 +280,11 @@ public class GamePanel extends JPanel implements ActionListener {
             // mouseClicked should handle this request, should there be a mill
             if (game.isThereAMill()) return;
 
+            if (movableStones == null) return;
+
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
                     currentlyClickedStone = stone;
-                    System.out.println("[CurrentlyClickedStone] New currently clicked stone" + currentlyClickedStone.hashCode());
 
                     currentlyClickedStone.setDragStartPoint(new Point(
                             (int) currentlyClickedStone.getPoint().getX(),
@@ -455,7 +453,6 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // This draws the indicator for the last move
         if (indicatorOfLastMove != null) {
-            System.out.println("Draw indicator of last move");
             g.setColor(Color.ORANGE);
             g.fillOval(
                 indicatorOfLastMove.x - indicatorCircleDiameter / 2,
@@ -467,7 +464,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         if (indicatorOfMovedStone != null) {
-            System.out.println("Draw indicator of moved stone");
             g.setColor(Color.ORANGE);
             g.drawOval(
                     indicatorOfMovedStone.x-10,
