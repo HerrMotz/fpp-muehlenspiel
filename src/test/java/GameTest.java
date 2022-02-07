@@ -239,27 +239,27 @@ public class GameTest {
     void checkJumpPhase() {
         try {
             //PlacePhase
-            game.placeStone(6,0, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(0, 0, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(6,3, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(0, 6, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(6,6, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.placeStone(6,0, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(0, 0, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(6,3, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(0, 6, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(6,6, new Stone(GameInterface.COLOUR_WHITE)); //white Mill
             game.removeStone(0,0);
-            game.placeStone(1, 3, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(1,5, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(2, 3, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(3,5, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3, 0, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(5,5, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.placeStone(1, 3, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(1,5, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(2, 3, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(3,5, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3, 0, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(5,5, new Stone(GameInterface.COLOUR_WHITE)); //white Mill
             game.removeStone(0,6);
-            game.placeStone(3, 2, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(1,1, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3, 4, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(3,1, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3, 6, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(5,1, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.placeStone(3, 2, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(1,1, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3, 4, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(3,1, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3, 6, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(5,1, new Stone(GameInterface.COLOUR_WHITE)); //white Mill
             game.removeStone(1,3);
-            game.placeStone(4, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(4, 3, new Stone(GameInterface.COLOUR_BLACK));
             //MovePhase
             game.moveStone(6,3,5,3); //white Mill
             game.removeStone(2,3);
@@ -280,13 +280,13 @@ public class GameTest {
     @Test
     void placeStoneAfterRemove() {
         try {
-            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(6, 0, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(0,3, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(6, 3, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(0,6, new Stone(Grid.COLOUR_WHITE)); //white Mill
+            game.placeStone(0,0, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(6, 0, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(0,3, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(6, 3, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(0,6, new Stone(GameInterface.COLOUR_WHITE)); //white Mill
             game.removeStone(6,3);
-            game.placeStone(6, 3, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(6, 3, new Stone(GameInterface.COLOUR_BLACK));
 
         } catch (IllegalMoveException e) {
             fail("Expected no exception, got: " + e.getMessage());
@@ -296,24 +296,24 @@ public class GameTest {
     @Test
     void moveStoneAfterRemove() {
         try {
-            game.placeStone(0,0, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(1,1, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(0,6, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(1,5, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(1,3, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3,0, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(3,2, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(2,4, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(3,4, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3,1, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(3,6, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(3,5, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(4,4, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(4,3, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(5,1, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(6,3, new Stone(Grid.COLOUR_BLACK));
-            game.placeStone(5,5, new Stone(Grid.COLOUR_WHITE));
-            game.placeStone(6,6, new Stone(Grid.COLOUR_BLACK));
+            game.placeStone(0,0, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(1,1, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(0,6, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(1,5, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(1,3, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3,0, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(3,2, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(2,4, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(3,4, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3,1, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(3,6, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(3,5, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(4,4, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(4,3, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(5,1, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(6,3, new Stone(GameInterface.COLOUR_BLACK));
+            game.placeStone(5,5, new Stone(GameInterface.COLOUR_WHITE));
+            game.placeStone(6,6, new Stone(GameInterface.COLOUR_BLACK));
 
             game.moveStone(1,3,0,3); //white Mill
             game.removeStone(6,3);

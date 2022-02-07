@@ -3,15 +3,25 @@ package interfaces;
 public enum GameEventMethod {
     Ping,
     Pong,
-    ClientConnect,
-    ClientDisconnect,
-    Status,
+
+    Login,
+    Register,
+    Logout,
+    AuthResponse,
+
     GameStart,
-    GameEnd,
     GameAborted,
+    GameOver,
+
     IllegalMove,
     PlaceStone,
     RemoveStone,
-    GameOver,
-    MoveStone
+    MoveStone,
+
+    EnterQuickMatchQueue,
+    LeaveQuickMatchQueue,
+
+    BroadcastPlayerPool,
+    MatchRequest,
+    MatchRequestResponse
 }

@@ -7,7 +7,6 @@ import interfaces.StoneInterface;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Stone implements StoneInterface, Serializable {
     private final ImageIcon icon;

@@ -16,7 +16,7 @@ import java.util.Arrays;
  * starts GUI & Socket connection
  *
  * @author Max Stock, Daniel Motz
- * @version 1.0
+ * @version 3.0 Deluxe
  */
 public class Client {
     private final String serverHost;
@@ -77,9 +77,11 @@ public class Client {
 
         if (client.connect()) {
             Runnable gui = () -> {
-                DebugFrame debugFrame = new DebugFrame(game, true);
+                DebugFrame debugFrame = null;
+                if (args.length > 0) {
+                  debugFrame = new DebugFrame(game, true);
+                }
                 GameFrame gameFrame = new GameFrame(debugFrame, game);
-//                GameFrame gameFrame = new GameFrame(null, game);
             };
 
             SwingUtilities.invokeLater(gui);

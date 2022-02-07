@@ -2,6 +2,7 @@ package frontend.helpers;
 
 import interfaces.GameEvent;
 import interfaces.GameEventMethod;
+import interfaces.User;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -24,15 +25,23 @@ public class SocketListener extends SwingWorker<Void, Void> {
             try {
                 if (objectInputStream.available() < 1 && unavailableCounter.incrementAndGet() > 1000) {
                     System.out.println("[Client SocketListener] Socket closed");
+
                     firePropertyChange("GamEvent", null, new GameEvent(
                             GameEventMethod.GameAborted, -1, null,
                             "Connection to server lost."
                     ));
                     break;
                 }
+
                 Object event = objectInputStream.readObject();
+
                 firePropertyChange("GameEvent", null, event);
-                System.out.println("[Client SocketListener] event " + ((GameEvent) event).getMethod() + " " + Arrays.toString(((GameEvent) event).getArguments()));
+
+                // this statement cost me 3h to find / by @HerrMotz
+                objectInputStream.reset();
+
+                // DEBUG
+                System.out.println("[Client SocketListener] event " + event + "\n\t\tData: " + ((GameEvent) event).getMethod() + " " + Arrays.toString(((GameEvent) event).getArguments()));
             } catch (IOException | ClassNotFoundException ignored) {}
         }
         System.out.println("[Client SocketListener] end");

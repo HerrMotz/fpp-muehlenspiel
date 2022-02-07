@@ -18,7 +18,7 @@ public class GameFrame extends JFrame {
     public GameFrame(DebugFrame debugFrame, Game game) {
         gamePanel = new GamePanel(debugFrame, game);
 
-        this.setTitle("Mühle für zwei Spieler");
+        this.setTitle("Mühle für n Spieler");
         this.getContentPane().add(gamePanel, BorderLayout.CENTER);
         this.pack();
         this.setSize(SCREEN_WIDTH+12, SCREEN_HEIGHT+35);
