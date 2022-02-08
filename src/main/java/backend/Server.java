@@ -83,9 +83,6 @@ public class Server extends Thread {
     }
 
     public synchronized void broadcastPlayerPool() {
-        //DEBUG
-        System.out.println("Broadcast Playerpool");
-
         Set<User> vacantPlayers = loggedInUsers.entrySet().stream()
                 .filter(e -> !e.getValue().isInMatch())
                 .map(Map.Entry::getKey)
@@ -100,7 +97,7 @@ public class Server extends Thread {
 
         for (ServerWorker serverWorker: playerPool) {
             // DEBUG
-            System.out.println("[PlayerPool] Broadcast to " + serverWorker + " " + Arrays.toString(loggedInUsers.keySet().toArray()));
+            System.out.println("[PlayerPool] Broadcast to " + serverWorker + " " + vacantPlayers);
             serverWorker.emit(event);
         }
     }

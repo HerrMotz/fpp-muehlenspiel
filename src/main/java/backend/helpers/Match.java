@@ -34,6 +34,11 @@ public class Match {
         return game;
     }
 
+    public void endGame() {
+        serverWorker1.returnToLobby();
+        serverWorker2.returnToLobby();
+    }
+
     public void broadcast(GameEvent gameEvent) {
         serverWorker1.emit(gameEvent);
         serverWorker2.emit(gameEvent);

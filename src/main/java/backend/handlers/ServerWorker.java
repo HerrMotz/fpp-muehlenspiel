@@ -211,7 +211,8 @@ public class ServerWorker extends Thread {
                                 -1,
                                 match.getGame().getStatus()
                         ));
-                        returnToLobby();
+
+                        match.endGame();
                     }
                 }
                 case MoveStone -> {
