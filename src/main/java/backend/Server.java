@@ -200,6 +200,7 @@ public class Server extends Thread {
             return;
         }
 
+        // There may only be one request at a time
         if (!openRequests.containsKey(byUser)) {
             openRequests.put(byUser, toUser);
             loggedInUsers.get(toUser).emit(new GameEvent(
@@ -225,14 +226,16 @@ public class Server extends Thread {
                     byUser,
                     accepted
             ));
-            openRequests.remove(byUser);
 
-            try {
-                createMatch(requestee, respondee);
-            } catch (IllegalMoveException e) {
-                e.printStackTrace();
+            openRequests.remove(toUser);
+
+            if (accepted) {
+                try {
+                    createMatch(requestee, respondee);
+                } catch (IllegalMoveException e) {
+                    e.printStackTrace();
+                }
             }
-
         } else {
             respondee.emit(new GameEvent(
                     GameEventMethod.IllegalMove,
@@ -243,6 +246,7 @@ public class Server extends Thread {
         }
 
         System.out.println("Relayed response: to:" + toUser + " , by:" + byUser);
+        System.out.println("Accepted? " + accepted);
     }
 
     public synchronized void addToQuickMatchQueue(ServerWorker serverWorker) {
@@ -321,7 +325,8 @@ public class Server extends Thread {
 
         System.out.println("loggedInUsers: " + loggedInUsers);
 
-        if (loggedInUsers.containsKey(serverWorker.getUser())) {
+        if (serverWorker.getUser() != null
+                && loggedInUsers.containsKey(serverWorker.getUser())) {
             loggedInUsers.remove(serverWorker.getUser());
             loggedInUsersSize.decrementAndGet();
         }

@@ -144,15 +144,12 @@ public class ServerWorker extends Thread {
                     ));
                 }
 
-                case Logout -> {
-                    System.out.println("LOGOUT");
-                    emit(new GameEvent(
-                            GameEventMethod.AuthResponse,
-                            0,
-                            null,
-                            server.logout(this)
-                    ));
-                }
+                case Logout -> emit(new GameEvent(
+                        GameEventMethod.AuthResponse,
+                        0,
+                        null,
+                        server.logout(this)
+                ));
 
                 case EnterQuickMatchQueue ->
                         server.addToQuickMatchQueue(this);

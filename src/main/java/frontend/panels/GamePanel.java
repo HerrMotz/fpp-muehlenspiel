@@ -109,6 +109,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private final JLabel lblErrorMessage = new JLabel();
 
+    private final JLabel lblOnlineCount =  new JLabel();
     @SuppressWarnings("rawtypes")
     private final JList lsUser = new JList();
     JScrollPane listScroller = new JScrollPane(lsUser);
@@ -224,8 +225,12 @@ public class GamePanel extends JPanel implements ActionListener {
 
                                 case Logout -> {
                                     if (authResponse.isSuccess()) {
+                                        System.out.println("[Logout] success");
                                         setUser(null);
+                                        System.out.println("GetUser " + getUser());
                                         btnLogout.setEnabled(false);
+                                        setClientMode(ClientMode.Login);
+                                        rerender();
                                     }
                                 }
 
@@ -267,8 +272,10 @@ public class GamePanel extends JPanel implements ActionListener {
                                     0,
                                     null,
                                     user,
-                                    selection < 1
+                                    selection == 0
                             ));
+
+                            System.out.println("Accepted? " + (selection == 0));
                         }
 
                         case MatchRequestResponse -> {
@@ -399,10 +406,6 @@ public class GamePanel extends JPanel implements ActionListener {
             } catch (IOException ex) {
                 setErrorMessage("Failed to logout: " + ex);
             }
-
-            setClientMode(ClientMode.Login);
-
-            rerender();
         });
 
         btnRegisterMenu.addActionListener(e -> {
@@ -539,7 +542,6 @@ public class GamePanel extends JPanel implements ActionListener {
         @Override
         public void mouseClicked(MouseEvent e) {
             errorMessage = "";
-            System.out.println(getClientMode());
 
             if (placedStones != null) {
                 for (Stone stone : placedStones) {
@@ -566,7 +568,11 @@ public class GamePanel extends JPanel implements ActionListener {
             super.mousePressed(e);
 
             if (game.getPhase() == GamePhase.ABORTED || game.getPhase() == GamePhase.GAME_OVER) {
-                setClientMode(ClientMode.Lobby);
+                if (getUser() != null) {
+                    setClientMode(ClientMode.Lobby);
+                } else {
+                    setClientMode(ClientMode.Login);
+                }
             }
 
             // mouseClicked should handle this request, should there be a mill
@@ -823,13 +829,13 @@ public class GamePanel extends JPanel implements ActionListener {
         setLayout(lobbyLayout);
 
         lblErrorMessage.setText(errorMessage);
+        lblOnlineCount.setText("Online users: " + loggedInUsers.size());
 
         if (loggedInUsers != null) {
             //noinspection unchecked
             lsUser.setListData(loggedInUsers.toArray());
         }
 
-        System.out.println(getUser());
         if (getUser() != null) {
             lblUsernameShow.setText("Your username: " + getUser().getUsername() + " Your user id: " + getUser().getId());
         }
@@ -838,6 +844,7 @@ public class GamePanel extends JPanel implements ActionListener {
         add(lblErrorMessage);
         add(lblUsernameShow);
 
+        add(lblOnlineCount);
         add(lsUser);
         add(btnInvite);
 
@@ -850,7 +857,6 @@ public class GamePanel extends JPanel implements ActionListener {
         lblErrorMessage.setText(errorMessage);
 
         add(lblMillgame);
-        add(lblUsernameShow);
         add(lblErrorMessage);
         add(lblUsername);
         add(txtUsername);
@@ -889,6 +895,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void rerender() {
         triggerUiChange();
         repaint();
+        System.out.println("[Rerender]");
     }
 
     @Override
