@@ -8,9 +8,9 @@ import java.awt.*;
 
 /**
  * Prints out:
- *  how many stones each player has in his inventory
- *  how many stones there are on the board
- *  whether a player is in the jump phase
+ *  - how many stones each player has in his inventory
+ *  - how many stones there are on the board
+ *  - whether a player is in the jump phase
  */
 public class DebugPanel extends JPanel {
     Game game;

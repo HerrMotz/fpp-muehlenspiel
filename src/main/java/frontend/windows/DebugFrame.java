@@ -25,4 +25,9 @@ public class DebugFrame extends JFrame {
         this.setVisible(visible);
         this.setLocation(1400,200);
     }
+
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+    }
 }

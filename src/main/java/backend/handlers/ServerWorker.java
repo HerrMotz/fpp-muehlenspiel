@@ -1,12 +1,13 @@
 package backend.handlers;
 
 import backend.Server;
+import backend.helpers.Match;
+import interfaces.User;
 import backend.logic.Stone;
 import interfaces.*;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerWorker extends Thread {
@@ -15,10 +16,11 @@ public class ServerWorker extends Thread {
     private final ObjectInputStream objectInputStream;
     private final ObjectOutputStream objectOutputStream;
 
-    private boolean running = true;
-
+    private Match match;
     private boolean myColour;
+    private User user;
 
+    private boolean running = true;
     private final AtomicInteger unavailableCounter = new AtomicInteger(0);
 
     public ServerWorker(Server server, Socket socket) throws IOException {
@@ -33,15 +35,44 @@ public class ServerWorker extends Thread {
         inputHandler();
     }
 
-    public void setMyColour(boolean colour) {
+    public void setColour(boolean colour) {
+        emit(new GameEvent(
+                GameEventMethod.GameStart,
+                -1,
+                match.getGame().getStatus(),
+                colour,
+                match.getGame().getCurrentPlayer()
+        ));
         myColour = colour;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public boolean isAuthenticated() {
+        return user != null;
+    }
+
+    public void setMatch(Match match) {
+        this.match = match;
+    }
+
     public void emit(GameEvent event) {
+        //DEBUG
+        System.out.println("[ServerWorker] emit: " + event);
+
         try {
             objectOutputStream.writeObject(event);
+            // this next statement cost me 3h to find / by @HerrMotz
+            objectOutputStream.reset();
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("From Emit");
             disconnectHandler();
         }
     }
@@ -56,12 +87,26 @@ public class ServerWorker extends Thread {
             } catch (IOException | ClassNotFoundException ignored) {}
         }
 
+        System.out.println("From InputHandler");
         disconnectHandler();
     }
 
     private void eventHandler(GameEvent event) {
         Object[] arguments = event.getArguments();
+
         int reference = event.getReference();
+
+        // validate input reference number
+        // only process positive numbers, because negatives are error codes
+        if (reference > 0) {
+            if ((event.getMethod() == GameEventMethod.RemoveStone)
+                    == (myColour == GameInterface.COLOUR_WHITE)) {
+                reference %= 9;
+                reference += 9;
+            } else {
+                reference %= 9;
+            }
+        }
 
         try {
             switch (event.getMethod()) {
@@ -70,47 +115,104 @@ public class ServerWorker extends Thread {
                         -1,
                         null
                 ));
+
+                case Login -> {
+                    String username = (String) arguments[0];
+                    String password = (String) arguments[1];
+                    emit(new GameEvent(
+                            GameEventMethod.AuthResponse,
+                            0,
+                            null,
+                            server.login(
+                                    this,
+                                    username,
+                                    password
+                            )
+                    ));
+                }
+                case Register -> {
+                    String username = (String) arguments[0];
+                    String password = (String) arguments[1];
+                    emit(new GameEvent(
+                            GameEventMethod.AuthResponse,
+                            0,
+                            null,
+                            server.register(
+                                username,
+                                password
+                            )
+                    ));
+                }
+
+                case Logout -> emit(new GameEvent(
+                        GameEventMethod.AuthResponse,
+                        0,
+                        null,
+                        server.logout(this)
+                ));
+
+                case EnterQuickMatchQueue ->
+                        server.addToQuickMatchQueue(this);
+
+                case LeaveQuickMatchQueue ->
+                        server.removeFromQuickMatchQueue(this);
+
+                case MatchRequest ->
+                        server.relayMatchRequest(
+                                (User) arguments[0],
+                                getUser(),
+                                this
+                        );
+
+                case MatchRequestResponse ->
+                        server.relayMatchRequestResponse(
+                                (User) arguments[0],
+                                getUser(),
+                                this,
+                                (Boolean) arguments[1]
+                        );
+
                 case PlaceStone -> {
-                    server.getGame().placeStoneCheckTurn(
+                    match.getGame().placeStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1],
                             new Stone(myColour)
                     );
 
-                    server.broadcast(new GameEvent(
+                    match.broadcast(new GameEvent(
                             GameEventMethod.PlaceStone,
                             reference,
-                            server.getGame().getStatus(),
+                            match.getGame().getStatus(),
                             arguments[0],
                             arguments[1]
                     ));
                 }
                 case RemoveStone -> {
-                    server.getGame().removeStoneCheckTurn(
+                    match.getGame().removeStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1]
                     );
 
-                    server.broadcast(new GameEvent(
+                    match.broadcast(new GameEvent(
                             GameEventMethod.RemoveStone,
                             reference,
-                            server.getGame().getStatus(),
+                            match.getGame().getStatus(),
                             arguments[0],
                             arguments[1]
                     ));
 
-                    if (server.getGame().getPhase() == GamePhase.GAME_OVER) {
-                        server.broadcast(new GameEvent(
+                    if (match.getGame().getPhase() == GamePhase.GAME_OVER) {
+                        match.broadcast(new GameEvent(
                                 GameEventMethod.GameOver,
                                 -1,
-                                server.getGame().getStatus()
+                                match.getGame().getStatus()
                         ));
                     }
                 }
                 case MoveStone -> {
-                    server.getGame().moveStoneCheckTurn(
+                    match.getGame().moveStoneCheckTurn(
                             myColour,
                             (Integer) arguments[0],
                             (Integer) arguments[1],
@@ -118,10 +220,10 @@ public class ServerWorker extends Thread {
                             (Integer) arguments[3]
                     );
 
-                    server.broadcast(new GameEvent(
+                    match.broadcast(new GameEvent(
                             GameEventMethod.MoveStone,
                             reference,
-                            server.getGame().getStatus(),
+                            match.getGame().getStatus(),
                             arguments[0],
                             arguments[1],
                             arguments[2],
@@ -129,14 +231,6 @@ public class ServerWorker extends Thread {
                     ));
                 }
             }
-
-            // DEBUG
-            System.out.println("[GameEvent] " + this.getName() + " " + (myColour ? "White" : "Black"));
-            System.out.println(server.getGame());
-            System.out.println(event.getMethod());
-            System.out.println(Arrays.toString(event.getArguments()));
-            System.out.println("It's " + (server.getGame().getCurrentPlayer() ? "White" : "Black") + "'s turn");
-
         } catch (IllegalMoveException e) {
             e.printStackTrace();
 
@@ -148,7 +242,7 @@ public class ServerWorker extends Thread {
             emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     reference,
-                    server.getGame().getStatus(),
+                    match.getGame().getStatus(),
                     e.getMessage()
             ));
         } catch (NullPointerException e) {
@@ -156,26 +250,31 @@ public class ServerWorker extends Thread {
             emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     reference,
-                    server.getGame().getStatus(),
-                    "The game has not started yet."
+                    null,
+                    "The game has not started yet or there is no match linked to this ServerWorker"
             ));
         } catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     reference,
-                    server.getGame().getStatus(),
+                    match.getGame().getStatus(),
                     "Your client gave parameters of wrong type. Please update your programme!"
             ));
         }
     }
 
     private void disconnectHandler() {
+        System.out.println("DisconnectHandler");
         try {
             socket.close();
         } catch (IOException ignored) {}
 
         server.removeServerWorker(this);
+
+        if (match != null) {
+            match.abortGame(this);
+        }
 
         running = false;
     }

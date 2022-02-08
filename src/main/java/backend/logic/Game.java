@@ -61,10 +61,10 @@ public class Game {
     }
 
     public synchronized void placeStone(int posX, int posY, StoneInterface stone) throws IllegalMoveException {
-
         if (thereIsAMill) {
             throw new IllegalMoveException("You have to remove a stone "+ this.getCurrentPlayer() +" before you can make another move.");
         }
+
         if (currentPhase != GamePhase.PLACE_PHASE) {
             throw new IllegalMoveException("The game is currently not in the place phase.");
         }
@@ -77,11 +77,10 @@ public class Game {
             takeStoneFromInventory(colour);
             changeTurns();
 
-            if (
-                    colour == firstMoveByColour
-                            && (firstMoveByColour == GameInterface.COLOUR_BLACK && blackStonesInInventory == 0)
-                            || (firstMoveByColour == GameInterface.COLOUR_WHITE && whiteStonesInInventory == 0)
-            ) {
+            if (colour == firstMoveByColour
+                && ((firstMoveByColour == GameInterface.COLOUR_BLACK && blackStonesInInventory == 0)
+                    || (firstMoveByColour == GameInterface.COLOUR_WHITE && whiteStonesInInventory == 0)
+                )) {
                 currentPhase = GamePhase.MOVE_PHASE;
             }
 

@@ -13,9 +13,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
+import java.util.List;
 
 /**
  * Game Panel
@@ -77,10 +76,51 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final double dropZoneRadius = 30;
     private final DebugFrame debugFrame;
 
+    private User user;
+    private ClientMode clientMode = ClientMode.Login;
+    private boolean uiChanged = false;
+
+    private Set<Object> loggedInUsers = new HashSet<>();
+
+    // UI Elements
+    private final GridLayout loginLayout = new GridLayout(0,1,10,10);
+    private final GridLayout registerLayout = new GridLayout(0,1,10,10);
+    private final GridLayout quickMatchLayout = new GridLayout(0,1,10,10);
+    private final GridLayout lobbyLayout = new GridLayout(0,1,10,10);
+
+    private final JButton btnLogin = new JButton("Login");
+    private final JButton btnLogout = new JButton("Logout");
+    private final JButton btnRegister = new JButton("Register");
+    private final JButton btnRegisterMenu = new JButton("Register");
+
+    private final JButton btnQuickMatch = new JButton("Quickmatch!");
+    private final JButton btnBack = new JButton("← Back");
+
+    private final JButton btnInvite = new JButton("Invite Player");
+
+    private final JTextField txtUsername = new JTextField();
+    private final JTextField txtPassword = new JTextField();
+
+    private final JLabel lblUsername = new JLabel("Username");
+    private final JLabel lblPassword = new JLabel("Password");
+
+    private final JLabel lblMillgame = new JLabel("Nine men's morris");
+    private final JLabel lblUsernameShow = new JLabel("");
+
+    private final JLabel lblErrorMessage = new JLabel();
+
+    private final JLabel lblOnlineCount =  new JLabel();
+    @SuppressWarnings("rawtypes")
+    private final JList lsUser = new JList();
+    JScrollPane listScroller = new JScrollPane(lsUser);
+
     /**
      * Starts a fresh game board for a new game.
      */
     public void initNewGame() {
+        setClientMode(ClientMode.Game);
+
+        // The order in which white and black stones are added to "all stones" matters
         ArrayList<Stone> whiteStones = new ArrayList<>();
         ArrayList<Stone> blackStones = new ArrayList<>();
         allStones = new ArrayList<>();
@@ -105,9 +145,15 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         }
 
-        allStones.addAll(blackStones);
+        // The order in which white and black stones are added to "all stones" matters
         allStones.addAll(whiteStones);
-        movableStones.addAll(allStones);
+        allStones.addAll(blackStones);
+
+        if (game.getMyColour() == GameInterface.COLOUR_WHITE) {
+            movableStones.addAll(whiteStones);
+        } else {
+            movableStones.addAll(blackStones);
+        }
     }
 
     /**
@@ -136,6 +182,10 @@ public class GamePanel extends JPanel implements ActionListener {
             if ("GameEvent".equals(e.getPropertyName())) {
                 try {
                     GameEvent gameEvent = (GameEvent) e.getNewValue();
+
+                    System.out.println("[GameEvent Handler]: " + gameEvent);
+
+                    // extract all properties
                     Object[] arguments = gameEvent.getArguments();
                     GameStatus gameStatus = gameEvent.getGameStatus();
                     int reference = gameEvent.getReference();
@@ -144,7 +194,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     indicatorOfMovedStone = null;
                     indicatorOfLastMove = null;
                     indicatorOfRemovedStone = null;
-                    errorMessage = "";
+                    resetErrorMessage();
 
                     switch (gameEvent.getMethod()) {
                         case Pong -> System.out.println("[GameEvent] Pong: " + Arrays.toString(gameEvent.getArguments()));
@@ -155,10 +205,98 @@ public class GamePanel extends JPanel implements ActionListener {
                                 "Client"
                         ));
 
-                        case IllegalMove -> {
-                            errorMessage = gameEvent.getArguments()[0].toString();
+                        case AuthResponse -> {
+                            AuthenticationResponse authResponse = (AuthenticationResponse) arguments[0];
+                            switch (authResponse.getMethod()) {
+                                case Login -> {
+                                    if (authResponse.isSuccess()) {
+                                        setUser(authResponse.getUser());
 
-                            if (reference != -1) {
+                                        setErrorMessage(authResponse.getMessage());
+                                        setClientMode(ClientMode.Lobby);
+                                        btnLogout.setEnabled(true);
+
+                                        rerender();
+                                    } else {
+                                        setErrorMessage(authResponse.getMessage());
+                                        rerender();
+                                    }
+                                }
+
+                                case Logout -> {
+                                    if (authResponse.isSuccess()) {
+                                        System.out.println("[Logout] success");
+                                        setUser(null);
+                                        System.out.println("GetUser " + getUser());
+                                        btnLogout.setEnabled(false);
+                                        setClientMode(ClientMode.Login);
+                                        rerender();
+                                    }
+                                }
+
+                                case Register -> {
+                                    if (authResponse.isSuccess()) {
+                                        setClientMode(ClientMode.Login);
+                                    }
+                                }
+                            }
+                            return;
+                        }
+
+                        case BroadcastPlayerPool -> {
+                            loggedInUsers = new HashSet<>();
+                            loggedInUsers.addAll(List.of(arguments));
+                            rerender();
+                        }
+
+                        case MatchRequest -> {
+                            User user = (User) arguments[0];
+                            Object[] options = {
+                                    "Yes (starts game)",
+                                    "No (politely declines)"
+                            };
+
+                            int selection = JOptionPane.showOptionDialog(
+                                    this,
+                                    "You got a match request from user " + user.getUsername(),
+                                    "Match Request",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    options,
+                                    options[1]
+                            );
+
+                            client.emit(new GameEvent(
+                                    GameEventMethod.MatchRequestResponse,
+                                    0,
+                                    null,
+                                    user,
+                                    selection == 0
+                            ));
+
+                            System.out.println("Accepted? " + (selection == 0));
+                        }
+
+                        case MatchRequestResponse -> {
+                            User user = (User) arguments[0];
+                            boolean accepted = (Boolean) arguments[1];
+
+                            new Thread(() -> JOptionPane.showMessageDialog(
+                                    null,
+                                    "Player " + user.getUsername() + " has "
+                                            + (accepted ? "accepted" : "declined")
+                                            + " your game request",
+                                    "Response from " + user.getUsername(),
+                                    JOptionPane.INFORMATION_MESSAGE
+                            )).start();
+
+                        }
+
+                        case IllegalMove -> {
+                            setErrorMessage(gameEvent.getArguments()[0].toString());
+
+                            if (reference > 0) {
                                 Stone referencedStone = allStones.get(reference);
                                 try {
                                     referencedStone.resetToDragStart();
@@ -167,12 +305,12 @@ public class GamePanel extends JPanel implements ActionListener {
                         }
 
                         case GameStart -> {
-                            initNewGame();
                             game.startGame((Boolean)arguments[0], (Boolean)arguments[1]);
+                            initNewGame();
                         }
 
                         case GameAborted -> {
-                            errorMessage = gameEvent.getArguments()[0].toString();
+                            setErrorMessage(gameEvent.getArguments()[0].toString());
                             game.abortGame();
                         }
 
@@ -203,8 +341,6 @@ public class GamePanel extends JPanel implements ActionListener {
                         case RemoveStone -> {
                             Stone referencedStone = allStones.get(reference);
 
-                            System.out.println(referencedStone.getPoint());
-
                             indicatorOfRemovedStone = new Point(referencedStone.getPoint());
 
                             movableStones.remove(referencedStone);
@@ -234,13 +370,132 @@ public class GamePanel extends JPanel implements ActionListener {
                     }
                 } catch (IOException ignored) {}
 
-                System.out.println("currentlyClickedStone null");
                 currentlyClickedStone = null;
-                repaint();
+                rerender();
             }
         });
 
         socketListener.execute();
+
+        // Button events
+        btnLogin.addActionListener(e -> {
+
+            // check whether fields are empty
+            if (txtUsername.getText().isBlank() || txtPassword.getText().isBlank()) {
+                setErrorMessage("You have to enter credentials to login.");
+            } else {
+                try {
+                    client.emit(new GameEvent(
+                            GameEventMethod.Login,
+                            0,
+                            null,
+                            txtUsername.getText(),
+                            txtPassword.getText()
+                    ));
+                } catch (IOException ex) {
+                    setErrorMessage("Failed to send credentials to server: " + ex);
+                }
+            }
+
+            rerender();
+        });
+
+        btnLogout.addActionListener(e -> {
+            try {
+                client.emit(new GameEvent(GameEventMethod.Logout, -1, null));
+            } catch (IOException ex) {
+                setErrorMessage("Failed to logout: " + ex);
+            }
+        });
+
+        btnRegisterMenu.addActionListener(e -> {
+            setClientMode(ClientMode.Register);
+            rerender();
+        });
+
+        btnRegister.addActionListener(e -> {
+            setClientMode(ClientMode.Login);
+            if (txtUsername.getText().isBlank() || txtPassword.getText().isBlank()) {
+                setErrorMessage("You have to enter credentials to login.");
+            } else {
+                try {
+                    client.emit(new GameEvent(
+                            GameEventMethod.Register,
+                            0,
+                            null,
+                            txtUsername.getText(),
+                            txtPassword.getText()
+                    ));
+                } catch (IOException ex) {
+                    setErrorMessage("An error occurred while registering: " + ex);
+                }
+            }
+            rerender();
+        });
+
+        btnQuickMatch.addActionListener(e -> {
+            try {
+                client.emit(new GameEvent(
+                        GameEventMethod.EnterQuickMatchQueue,
+                        0,
+                        null,
+                        (Object) null
+                ));
+                setClientMode(ClientMode.QuickMatch);
+                rerender();
+            } catch (IOException ex) {
+                errorMessage = "An error occurred while entering quick match queue: " + ex;
+            }
+        });
+
+        btnBack.addActionListener(e -> {
+            if (getClientMode() == ClientMode.QuickMatch) {
+                // client emit withdrawal from quick match queue
+                try {
+                    client.emit(new GameEvent(
+                            GameEventMethod.LeaveQuickMatchQueue,
+                            0,
+                            null,
+                            (Object) null
+                    ));
+                } catch (IOException ex) {
+                    errorMessage = "An error occurred while entering quick match queue: " + ex;
+                }
+            }
+            setClientMode(ClientMode.Login);
+            rerender();
+        });
+
+        btnInvite.addActionListener(e -> {
+            try {
+                client.emit(new GameEvent(
+                        GameEventMethod.MatchRequest,
+                        0,
+                        null,
+                        lsUser.getSelectedValue()
+                ));
+            } catch (IOException ex) {
+                errorMessage = "An error occurred while sending a match request: " + ex;
+            }
+        });
+
+        // Settings for UI elements
+        lblUsername.setHorizontalAlignment(JLabel.CENTER);
+        lblPassword.setHorizontalAlignment(JLabel.CENTER);
+
+        lblMillgame.setHorizontalAlignment(JLabel.CENTER);
+        lblMillgame.setFont(new Font("Serif", Font.PLAIN, 20));
+
+        lblErrorMessage.setForeground(Color.RED);
+        lblErrorMessage.setHorizontalAlignment(JLabel.CENTER);
+
+        btnLogout.setEnabled(false);
+
+        lsUser.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        lsUser.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        lsUser.setVisibleRowCount(-1);
+
+        listScroller.setPreferredSize(new Dimension(250, 80));
     }
 
     /**
@@ -253,24 +508,56 @@ public class GamePanel extends JPanel implements ActionListener {
 
     }
 
+    private boolean isLoggedIn() {
+        return user != null;
+    }
+
+    private User getUser() {
+        return user;
+    }
+
+    private void setUser(User user) {
+        this.user = user;
+    }
+
+    private ClientMode getClientMode() {
+        return clientMode;
+    }
+
+    private void setClientMode(ClientMode clientMode) {
+        this.clientMode = clientMode;
+    }
+
+    private boolean isUiChanged() {
+        boolean temp = uiChanged;
+        uiChanged = false;
+        return temp;
+    }
+
+    private void triggerUiChange() {
+        uiChanged = true;
+    }
+
     private class ClickListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
             errorMessage = "";
 
-            for (Stone stone : placedStones) {
-                if (stone.contains(e.getPoint())) {
-                    try {
-                        game.removeStone(
-                                allStones.indexOf(stone),
-                                stone.getGridPosX(),
-                                stone.getGridPosY()
-                        );
-                        break;
-                    } catch (IllegalMoveException ignored) {
+            if (placedStones != null) {
+                for (Stone stone : placedStones) {
+                    if (stone.contains(e.getPoint())) {
+                        try {
+                            game.removeStone(
+                                    allStones.indexOf(stone),
+                                    stone.getGridPosX(),
+                                    stone.getGridPosY()
+                            );
+                            break;
+                        } catch (IllegalMoveException ignored) {
 
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
             }
@@ -280,13 +567,22 @@ public class GamePanel extends JPanel implements ActionListener {
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
 
+            if (game.getPhase() == GamePhase.ABORTED || game.getPhase() == GamePhase.GAME_OVER) {
+                if (getUser() != null) {
+                    setClientMode(ClientMode.Lobby);
+                } else {
+                    setClientMode(ClientMode.Login);
+                }
+            }
+
             // mouseClicked should handle this request, should there be a mill
             if (game.isThereAMill()) return;
+
+            if (movableStones == null) return;
 
             for (Stone stone : movableStones) {
                 if (stone.contains(e.getPoint())) {
                     currentlyClickedStone = stone;
-                    System.out.println("[CurrentlyClickedStone] New currently clicked stone" + currentlyClickedStone.hashCode());
 
                     currentlyClickedStone.setDragStartPoint(new Point(
                             (int) currentlyClickedStone.getPoint().getX(),
@@ -304,53 +600,55 @@ public class GamePanel extends JPanel implements ActionListener {
             // mouseClicked should handle this request, should there be a mill
             if (game.isThereAMill()) return;
 
-            for (Stone stone : movableStones) {
-                if (stone.contains(e.getPoint())) {
-                    for (FieldPosition validPosition : validPositions) {
-                        double distance = Math.sqrt(
-                                Math.pow(validPosition.getY() - e.getPoint().getY(), 2) +
-                                Math.pow(validPosition.getX() - e.getPoint().getX(), 2)
-                        );
+            if (movableStones != null) {
+                for (Stone stone : movableStones) {
+                    if (stone.contains(e.getPoint())) {
+                        for (FieldPosition validPosition : validPositions) {
+                            double distance = Math.sqrt(
+                                    Math.pow(validPosition.getY() - e.getPoint().getY(), 2) +
+                                            Math.pow(validPosition.getX() - e.getPoint().getX(), 2)
+                            );
 
-                        if (distance <= dropZoneRadius) {
-                            try {
-                                if (game.getPhase() == GamePhase.PLACE_PHASE) {
-                                    game.placeStone(
-                                            allStones.indexOf(stone),
-                                            validPosition.getGridX(),
-                                            validPosition.getGridY()
-                                    );
-                                } else {
-                                    // MOVE_PHASE and JUMP_PHASE have identical parameters. Everything else is done in backend.logic.Game
-                                    game.moveStone(
-                                            allStones.indexOf(currentlyClickedStone), // ICH HASSE MEIN LEBEN DAFÜR HABE ICH 4 H gebraucht
-                                            currentlyClickedStone.getGridPosX(),
-                                            currentlyClickedStone.getGridPosY(),
-                                            validPosition.getGridX(),
-                                            validPosition.getGridY()
-                                    );
+                            if (distance <= dropZoneRadius) {
+                                try {
+                                    if (game.getPhase() == GamePhase.PLACE_PHASE) {
+                                        game.placeStone(
+                                                allStones.indexOf(stone),
+                                                validPosition.getGridX(),
+                                                validPosition.getGridY()
+                                        );
+                                    } else {
+                                        // MOVE_PHASE and JUMP_PHASE have identical parameters. Everything else is done in backend.logic.Game
+                                        game.moveStone(
+                                                allStones.indexOf(currentlyClickedStone), // ICH HASSE MEIN LEBEN DAFÜR HABE ICH 4 H gebraucht
+                                                currentlyClickedStone.getGridPosX(),
+                                                currentlyClickedStone.getGridPosY(),
+                                                validPosition.getGridX(),
+                                                validPosition.getGridY()
+                                        );
+                                    }
+                                } catch (IllegalMoveException ex) {
+                                    setErrorMessage(ex.getMessage());
+
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
                                 }
-                            } catch (IllegalMoveException ex) {
-                                errorMessage = ex.getMessage();
 
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                                // Breaks out of the for loop early
+                                return;
                             }
-
-                            // Breaks out of the for loop early
-                            return;
                         }
+
+                        // There is a stone which the mouse is hovering over, but it
+                        // has not been dropped over a dropzone
+
+                        // es liegt
+                        currentlyClickedStone.resetToDragStart();
+                        currentlyClickedStone = null;
                     }
-
-                    // There is a stone which the mouse is hovering over, but it
-                    // has not been dropped over a dropzone
-
-                    // es liegt
-                    currentlyClickedStone.resetToDragStart();
-                    currentlyClickedStone = null;
                 }
+                rerender();
             }
-            repaint();
         }
     }
 
@@ -359,23 +657,22 @@ public class GamePanel extends JPanel implements ActionListener {
         public void mouseDragged(MouseEvent e) {
             if (currentlyClickedStone != null) {
                 currentlyClickedStone.moveToCenter((int)e.getPoint().getX(), (int)e.getPoint().getY());
+                rerender();
             }
-            repaint();
         }
     }
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-
-        if (debugFrame != null) {
-            debugFrame.repaint();
+    private void drawGame(Graphics g) {
+        if (getLayout() != null) {
+            removeAll();
+            setLayout(null);
+            rerender();
         }
 
         if (game.getPhase() != GamePhase.WAITING_FOR_PLAYERS && game.getPhase() != GamePhase.ABORTED) {
             g.drawString(
                     "You are: "
-                    + game.getMyColourAsString(),
+                            + game.getMyColourAsString(),
                     100,
                     40
             );
@@ -391,11 +688,13 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         if (errorMessage.equals("It's the other player's turn.")
-            && game.isItMyTurn()) {
-            errorMessage = "Please use stones of your own colour to make a move.";
+                && game.isItMyTurn()) {
+            setErrorMessage("Please use stones of your own colour to make a move.");
         }
 
+        g.setColor(Color.RED);
         g.drawString(errorMessage, 350, 70);
+        g.setColor(Color.BLACK);
 
         if (game.isThereAMill()) {
             text = "There is a mill";
@@ -423,7 +722,9 @@ public class GamePanel extends JPanel implements ActionListener {
                     + game.getOtherPlayerAsString()
                     + " won.";
         } else if (game.isColourInJumpPhase(game.getMyColour())) {
-            phase = "JUMP_PHASE";
+            phase = "Jump Phase";
+        } else if (game.getPhase() == GamePhase.ABORTED) {
+            phase = "Game aborted. Press any button to go back to lobby...";
         } else {
             phase = game.getPhaseAsString();
         }
@@ -455,19 +756,17 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // This draws the indicator for the last move
         if (indicatorOfLastMove != null) {
-            System.out.println("Draw indicator of last move");
             g.setColor(Color.ORANGE);
             g.fillOval(
-                indicatorOfLastMove.x - indicatorCircleDiameter / 2,
-                indicatorOfLastMove.y - indicatorCircleDiameter / 2,
-                indicatorCircleDiameter,
-                indicatorCircleDiameter
+                    indicatorOfLastMove.x - indicatorCircleDiameter / 2,
+                    indicatorOfLastMove.y - indicatorCircleDiameter / 2,
+                    indicatorCircleDiameter,
+                    indicatorCircleDiameter
             );
             g.setColor(Color.BLACK);
         }
 
         if (indicatorOfMovedStone != null) {
-            System.out.println("Draw indicator of moved stone");
             g.setColor(Color.ORANGE);
             g.drawOval(
                     indicatorOfMovedStone.x-10,
@@ -524,5 +823,118 @@ public class GamePanel extends JPanel implements ActionListener {
 
             g.setColor(Color.BLACK);
         }
+    }
+
+    private void drawLobby(Graphics g) {
+        setLayout(lobbyLayout);
+
+        lblErrorMessage.setText(errorMessage);
+        lblOnlineCount.setText("Online users: " + loggedInUsers.size());
+
+        if (loggedInUsers != null) {
+            //noinspection unchecked
+            lsUser.setListData(loggedInUsers.toArray());
+        }
+
+        if (getUser() != null) {
+            lblUsernameShow.setText("Your username: " + getUser().getUsername() + " Your user id: " + getUser().getId());
+        }
+
+        add(lblMillgame);
+        add(lblErrorMessage);
+        add(lblUsernameShow);
+
+        add(lblOnlineCount);
+        add(lsUser);
+        add(btnInvite);
+
+        add(btnLogout);
+    }
+
+    private void drawLogin(Graphics g) {
+        setLayout(loginLayout);
+
+        lblErrorMessage.setText(errorMessage);
+
+        add(lblMillgame);
+        add(lblErrorMessage);
+        add(lblUsername);
+        add(txtUsername);
+        add(lblPassword);
+        add(txtPassword);
+        add(btnLogin);
+        add(btnRegisterMenu);
+        add(btnLogout);
+        add(btnQuickMatch);
+    }
+
+    private void drawRegister(Graphics g) {
+        setLayout(registerLayout);
+
+        add(lblMillgame);
+
+        add(lblUsername);
+        add(txtUsername);
+
+        add(lblPassword);
+        add(txtPassword);
+
+        add(btnRegister);
+        add(btnBack);
+    }
+
+    private void drawQuickMatch(Graphics g) {
+        setLayout(quickMatchLayout);
+
+        add(lblMillgame);
+        add(new JLabel("Waiting for another player..."));
+
+        add(btnBack);
+    }
+
+    private void rerender() {
+        triggerUiChange();
+        repaint();
+        System.out.println("[Rerender]");
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+
+        g.setColor(Color.black);
+
+        if (debugFrame != null) {
+            debugFrame.repaint();
+        }
+
+        boolean changes = isUiChanged();
+
+        if (changes) {
+            removeAll();
+            txtUsername.setText("");
+            txtPassword.setText("");
+        }
+
+        switch (getClientMode()) {
+            case Game -> drawGame(g);
+            case Lobby -> drawLobby(g);
+            case Login -> drawLogin(g);
+            case Register -> drawRegister(g);
+            case QuickMatch -> drawQuickMatch(g);
+        }
+
+        if (changes) {
+            validate();
+            repaint();
+        }
+    }
+
+    private void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    private void resetErrorMessage() {
+        errorMessage = "";
     }
 }
