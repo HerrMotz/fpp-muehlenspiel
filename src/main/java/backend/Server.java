@@ -332,9 +332,6 @@ public class Server extends Thread {
             playerPoolSize.decrementAndGet();
         }
 
-        // DEBUG
-        System.out.println("loggedInUsers: " + loggedInUsers);
-
         if (serverWorker.getUser() != null) {
             if (loggedInUsers.containsKey(serverWorker.getUser())) {
                 loggedInUsers.remove(serverWorker.getUser());
