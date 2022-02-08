@@ -245,7 +245,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case BroadcastPlayerPool -> {
                             loggedInUsers = new HashSet<>();
-                            loggedInUsers.addAll(List.of(arguments));
+                            //noinspection unchecked
+                            loggedInUsers.addAll((HashSet<User>) arguments[0]);
                             rerender();
                         }
 

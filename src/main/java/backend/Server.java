@@ -13,13 +13,11 @@ import org.bson.Document;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.*;
 
@@ -56,6 +54,7 @@ public class Server extends Thread {
     public void run() {
         try {
             ServerSocket serverSocket = new ServerSocket(port);
+            // DEBUG
             System.out.println("Server started on " + port);
 
             //noinspection InfiniteLoopStatement
@@ -83,15 +82,24 @@ public class Server extends Thread {
                 .getCollection(authenticationDatabaseUserCollectionName);
     }
 
-    private synchronized void broadcastPlayerPool() {
+    public synchronized void broadcastPlayerPool() {
+        //DEBUG
+        System.out.println("Broadcast Playerpool");
+
+        Set<User> vacantPlayers = loggedInUsers.entrySet().stream()
+                .filter(e -> !e.getValue().isInMatch())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
         GameEvent event = new GameEvent(
                 GameEventMethod.BroadcastPlayerPool,
                 0,
                 null,
-                loggedInUsers.keySet().toArray()
+                vacantPlayers
         );
-        System.out.println(loggedInUsers.keySet().toArray().length);
+
         for (ServerWorker serverWorker: playerPool) {
+            // DEBUG
             System.out.println("[PlayerPool] Broadcast to " + serverWorker + " " + Arrays.toString(loggedInUsers.keySet().toArray()));
             serverWorker.emit(event);
         }
@@ -211,11 +219,14 @@ public class Server extends Thread {
             ));
         }
 
+        // DEBUG
         System.out.println("Added new request: to:" + toUser + " , by:" + byUser);
     }
 
     public synchronized void relayMatchRequestResponse(User toUser, User byUser, ServerWorker respondee, boolean accepted) {
+        // DEBUG
         System.out.println("Open requests: " + openRequests);
+
         if (openRequests.get(toUser).equals(byUser)) {
             ServerWorker requestee = loggedInUsers.get(toUser);
 
@@ -245,6 +256,7 @@ public class Server extends Thread {
             ));
         }
 
+        // DEBUG
         System.out.println("Relayed response: to:" + toUser + " , by:" + byUser);
         System.out.println("Accepted? " + accepted);
     }
@@ -323,12 +335,14 @@ public class Server extends Thread {
             playerPoolSize.decrementAndGet();
         }
 
+        // DEBUG
         System.out.println("loggedInUsers: " + loggedInUsers);
 
-        if (serverWorker.getUser() != null
-                && loggedInUsers.containsKey(serverWorker.getUser())) {
-            loggedInUsers.remove(serverWorker.getUser());
-            loggedInUsersSize.decrementAndGet();
+        if (serverWorker.getUser() != null) {
+            if (loggedInUsers.containsKey(serverWorker.getUser())) {
+                loggedInUsers.remove(serverWorker.getUser());
+                loggedInUsersSize.decrementAndGet();
+            }
         }
 
         broadcastPlayerPool();
