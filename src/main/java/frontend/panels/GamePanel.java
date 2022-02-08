@@ -60,6 +60,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private ArrayList<Stone> allStones;
     private ArrayList<Stone> movableStones;
     private ArrayList<Stone> placedStones;
+    private ArrayList<Stone> whiteStones;
+    private ArrayList<Stone> blackStones;
     private HashSet<FieldPosition> validPositions;
 
     private final Client client;
@@ -121,8 +123,8 @@ public class GamePanel extends JPanel implements ActionListener {
         setClientMode(ClientMode.Game);
 
         // The order in which white and black stones are added to "all stones" matters
-        ArrayList<Stone> whiteStones = new ArrayList<>();
-        ArrayList<Stone> blackStones = new ArrayList<>();
+        whiteStones = new ArrayList<>();
+        blackStones = new ArrayList<>();
         allStones = new ArrayList<>();
         movableStones = new ArrayList<>();
         placedStones = new ArrayList<>();
@@ -245,7 +247,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
                         case BroadcastPlayerPool -> {
                             loggedInUsers = new HashSet<>();
-                            loggedInUsers.addAll(List.of(arguments));
+                            //noinspection unchecked
+                            loggedInUsers.addAll((HashSet<User>) arguments[0]);
                             rerender();
                         }
 
@@ -330,7 +333,16 @@ public class GamePanel extends JPanel implements ActionListener {
                             placedStones.add(referencedStone);
 
                             if (game.getPhase() == GamePhase.MOVE_PHASE) {
-                                movableStones.addAll(placedStones);
+
+                                ArrayList<Stone> movePhaseStones = new ArrayList<>(placedStones);
+
+                                if (game.getMyColour() == GameInterface.COLOUR_WHITE) {
+                                    movePhaseStones.removeAll(blackStones);
+                                } else {
+                                    movePhaseStones.removeAll(whiteStones);
+                                }
+
+                                movableStones.addAll(movePhaseStones);
                             }
 
                             if (!game.isThereAMill()) {

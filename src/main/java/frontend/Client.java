@@ -72,7 +72,7 @@ public class Client {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        Client client = new Client("localhost", 2302);
+        Client client = new Client("81.201.150.156", 2302);
         Game game = new Game(client);
 
         if (client.connect()) {

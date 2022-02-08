@@ -26,15 +26,17 @@ public class Match {
         // determine which player gets which colour
         boolean colour1 = (Math.random() < x);
         this.serverWorker1.setColour(colour1);
-        System.out.println(colour1);
         this.serverWorker2.setColour(!colour1);
-        System.out.println(colour1);
-        System.out.println(!colour1);
 
     }
 
     public Game getGame() {
         return game;
+    }
+
+    public void endGame() {
+        serverWorker1.returnToLobby();
+        serverWorker2.returnToLobby();
     }
 
     public void broadcast(GameEvent gameEvent) {
@@ -50,8 +52,8 @@ public class Match {
                 "Other player disconnected"
         );
 
-        serverWorker1.setMatch(null);
-        serverWorker2.setMatch(null);
+        serverWorker1.returnToLobby();
+        serverWorker2.returnToLobby();
 
         if (serverWorker1 == disconnectedClient) {
             serverWorker2.emit(gameAbortedEvent);

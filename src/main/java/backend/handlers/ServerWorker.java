@@ -62,6 +62,8 @@ public class ServerWorker extends Thread {
         this.match = match;
     }
 
+    public boolean isInMatch() { return this.match != null; }
+
     public void emit(GameEvent event) {
         //DEBUG
         System.out.println("[ServerWorker] emit: " + event);
@@ -209,6 +211,8 @@ public class ServerWorker extends Thread {
                                 -1,
                                 match.getGame().getStatus()
                         ));
+
+                        match.endGame();
                     }
                 }
                 case MoveStone -> {
@@ -262,6 +266,11 @@ public class ServerWorker extends Thread {
                     "Your client gave parameters of wrong type. Please update your programme!"
             ));
         }
+    }
+
+    public void returnToLobby() {
+        setMatch(null);
+        server.broadcastPlayerPool();
     }
 
     private void disconnectHandler() {
