@@ -54,10 +54,6 @@ public class ServerWorker extends Thread {
         return user;
     }
 
-    public boolean isAuthenticated() {
-        return user != null;
-    }
-
     public void setMatch(Match match) {
         this.match = match;
     }
@@ -271,6 +267,10 @@ public class ServerWorker extends Thread {
     public void returnToLobby() {
         setMatch(null);
         server.broadcastPlayerPool();
+    }
+
+    public void addToPool() {
+        server.addToPlayerPool(this);
     }
 
     private void disconnectHandler() {

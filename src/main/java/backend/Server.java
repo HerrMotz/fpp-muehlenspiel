@@ -82,7 +82,9 @@ public class Server extends Thread {
                 .getCollection(authenticationDatabaseUserCollectionName);
     }
 
-    public synchronized void broadcastPlayerPool() {
+    public void broadcastPlayerPool() {
+        System.out.println("BC PP");
+
         Set<User> vacantPlayers = loggedInUsers.entrySet().stream()
                 .filter(e -> !e.getValue().isInMatch())
                 .map(Map.Entry::getKey)
@@ -94,6 +96,8 @@ public class Server extends Thread {
                 null,
                 vacantPlayers
         );
+
+        System.out.println("PlayerPool contains: " + playerPool);
 
         for (ServerWorker serverWorker: playerPool) {
             // DEBUG
@@ -180,6 +184,9 @@ public class Server extends Thread {
     public synchronized AuthenticationResponse logout(ServerWorker client) {
         removeFromPlayerPool(client);
         client.setUser(null);
+
+        broadcastPlayerPool();
+
         return new AuthenticationResponse(
                 "You have successfully logged out.",
                 true,
@@ -194,9 +201,9 @@ public class Server extends Thread {
         System.out.println("[Matchmaking] New match created " + client1 + " & "+ client2);
     }
 
-    public synchronized void relayMatchRequest(User toUser, User byUser, ServerWorker serverWorker) {
+    public synchronized void relayMatchRequest(User toUser, User byUser, ServerWorker requestee) {
         if (toUser.equals(byUser)) {
-            serverWorker.emit(new GameEvent(
+            requestee.emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     -2,
                     null,
@@ -240,6 +247,10 @@ public class Server extends Thread {
             if (accepted) {
                 try {
                     createMatch(requestee, respondee);
+                    playerPool.remove(requestee);
+                    playerPool.remove(respondee);
+                    broadcastPlayerPool();
+
                 } catch (IllegalMoveException e) {
                     e.printStackTrace();
                 }
@@ -308,6 +319,9 @@ public class Server extends Thread {
     }
 
     public synchronized void addToPlayerPool(ServerWorker serverWorker) {
+        // DEBUG
+        System.out.println("[PlayerPool] Add " + serverWorker.getUser());
+
         if (!playerPool.contains(serverWorker)) {
             playerPoolSize.incrementAndGet();
             playerPool.add(serverWorker);
@@ -327,6 +341,9 @@ public class Server extends Thread {
     }
 
     public synchronized void removeFromPlayerPool(ServerWorker serverWorker) {
+        // DEBUG
+        System.out.println("[PlayerPool] Remove " + serverWorker.getUser());
+
         if (playerPool.contains(serverWorker)) {
             playerPool.remove(serverWorker);
             playerPoolSize.decrementAndGet();
