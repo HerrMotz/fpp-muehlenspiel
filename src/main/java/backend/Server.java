@@ -82,7 +82,7 @@ public class Server extends Thread {
                 .getCollection(authenticationDatabaseUserCollectionName);
     }
 
-    public synchronized void broadcastPlayerPool() {
+    public void broadcastPlayerPool() {
         System.out.println("BC PP");
 
         Set<User> vacantPlayers = loggedInUsers.entrySet().stream()
@@ -184,6 +184,9 @@ public class Server extends Thread {
     public synchronized AuthenticationResponse logout(ServerWorker client) {
         removeFromPlayerPool(client);
         client.setUser(null);
+
+        broadcastPlayerPool();
+
         return new AuthenticationResponse(
                 "You have successfully logged out.",
                 true,
@@ -198,9 +201,9 @@ public class Server extends Thread {
         System.out.println("[Matchmaking] New match created " + client1 + " & "+ client2);
     }
 
-    public synchronized void relayMatchRequest(User toUser, User byUser, ServerWorker serverWorker) {
+    public synchronized void relayMatchRequest(User toUser, User byUser, ServerWorker requestee) {
         if (toUser.equals(byUser)) {
-            serverWorker.emit(new GameEvent(
+            requestee.emit(new GameEvent(
                     GameEventMethod.IllegalMove,
                     -2,
                     null,

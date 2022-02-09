@@ -35,6 +35,8 @@ public class Match {
     }
 
     public void endGame() {
+        serverWorker1.addToPool();
+        serverWorker2.addToPool();
         serverWorker1.returnToLobby();
         serverWorker2.returnToLobby();
     }
@@ -57,6 +59,7 @@ public class Match {
         if (serverWorker1 == disconnectedClient) {
             serverWorker2.emit(gameAbortedEvent);
             serverWorker2.addToPool();
+
         } else if (serverWorker2 == disconnectedClient) {
             serverWorker1.emit(gameAbortedEvent);
             serverWorker1.addToPool();
