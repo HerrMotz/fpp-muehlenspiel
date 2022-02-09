@@ -83,6 +83,8 @@ public class Server extends Thread {
     }
 
     public synchronized void broadcastPlayerPool() {
+        System.out.println("BC PP");
+
         Set<User> vacantPlayers = loggedInUsers.entrySet().stream()
                 .filter(e -> !e.getValue().isInMatch())
                 .map(Map.Entry::getKey)
@@ -94,6 +96,8 @@ public class Server extends Thread {
                 null,
                 vacantPlayers
         );
+
+        System.out.println("PlayerPool contains: " + playerPool);
 
         for (ServerWorker serverWorker: playerPool) {
             // DEBUG
@@ -312,6 +316,9 @@ public class Server extends Thread {
     }
 
     public synchronized void addToPlayerPool(ServerWorker serverWorker) {
+        // DEBUG
+        System.out.println("[PlayerPool] Add " + serverWorker.getUser());
+
         if (!playerPool.contains(serverWorker)) {
             playerPoolSize.incrementAndGet();
             playerPool.add(serverWorker);
@@ -331,6 +338,9 @@ public class Server extends Thread {
     }
 
     public synchronized void removeFromPlayerPool(ServerWorker serverWorker) {
+        // DEBUG
+        System.out.println("[PlayerPool] Remove " + serverWorker.getUser());
+
         if (playerPool.contains(serverWorker)) {
             playerPool.remove(serverWorker);
             playerPoolSize.decrementAndGet();

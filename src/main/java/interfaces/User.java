@@ -1,9 +1,12 @@
 package interfaces;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 public record User(String id, String username) implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 0L;
 
     public String getId() {
         return id;
@@ -28,6 +31,7 @@ public record User(String id, String username) implements Serializable {
 
     @Override
     public String toString() {
-        return username;
+        return "  " + username + "  ";
     }
+
 }

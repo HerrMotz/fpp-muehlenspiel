@@ -52,13 +52,14 @@ public class Match {
                 "Other player disconnected"
         );
 
-        serverWorker1.returnToLobby();
-        serverWorker2.returnToLobby();
+        endGame();
 
         if (serverWorker1 == disconnectedClient) {
             serverWorker2.emit(gameAbortedEvent);
+            serverWorker2.addToPool();
         } else if (serverWorker2 == disconnectedClient) {
             serverWorker1.emit(gameAbortedEvent);
+            serverWorker1.addToPool();
         }
     }
 }

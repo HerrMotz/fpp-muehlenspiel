@@ -269,6 +269,10 @@ public class ServerWorker extends Thread {
         server.broadcastPlayerPool();
     }
 
+    public void addToPool() {
+        server.addToPlayerPool(this);
+    }
+
     private void disconnectHandler() {
         System.out.println("DisconnectHandler");
         try {

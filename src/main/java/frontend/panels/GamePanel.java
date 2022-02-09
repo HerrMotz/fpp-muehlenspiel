@@ -249,9 +249,7 @@ public class GamePanel extends JPanel implements ActionListener {
                             loggedInUsers = new HashSet<>();
                             //noinspection unchecked
                             loggedInUsers.addAll(
-                                    ((HashSet<User>) arguments[0]).stream()
-                                            .map(entry -> "  " + entry.getUsername() + "  ")
-                                            .collect(Collectors.toSet())
+                                    ((HashSet<User>) arguments[0])
                             );
                             rerender();
                         }
@@ -510,8 +508,6 @@ public class GamePanel extends JPanel implements ActionListener {
         lsUser.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         lsUser.setLayoutOrientation(JList.HORIZONTAL_WRAP);
         lsUser.setVisibleRowCount(-1);
-        DefaultListCellRenderer renderer = (DefaultListCellRenderer) lsUser.getCellRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
 
         listScroller.setPreferredSize(new Dimension(250, 80));
     }
