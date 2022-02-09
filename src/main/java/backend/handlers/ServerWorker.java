@@ -54,10 +54,6 @@ public class ServerWorker extends Thread {
         return user;
     }
 
-    public boolean isAuthenticated() {
-        return user != null;
-    }
-
     public void setMatch(Match match) {
         this.match = match;
     }

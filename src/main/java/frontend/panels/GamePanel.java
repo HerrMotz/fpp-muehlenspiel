@@ -14,7 +14,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Game Panel
@@ -248,7 +248,11 @@ public class GamePanel extends JPanel implements ActionListener {
                         case BroadcastPlayerPool -> {
                             loggedInUsers = new HashSet<>();
                             //noinspection unchecked
-                            loggedInUsers.addAll((HashSet<User>) arguments[0]);
+                            loggedInUsers.addAll(
+                                    ((HashSet<User>) arguments[0]).stream()
+                                            .map(entry -> "  " + entry.getUsername() + "  ")
+                                            .collect(Collectors.toSet())
+                            );
                             rerender();
                         }
 
@@ -506,6 +510,8 @@ public class GamePanel extends JPanel implements ActionListener {
         lsUser.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         lsUser.setLayoutOrientation(JList.HORIZONTAL_WRAP);
         lsUser.setVisibleRowCount(-1);
+        DefaultListCellRenderer renderer = (DefaultListCellRenderer) lsUser.getCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
 
         listScroller.setPreferredSize(new Dimension(250, 80));
     }
@@ -518,10 +524,6 @@ public class GamePanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-    }
-
-    private boolean isLoggedIn() {
-        return user != null;
     }
 
     private User getUser() {
@@ -736,7 +738,7 @@ public class GamePanel extends JPanel implements ActionListener {
         } else if (game.isColourInJumpPhase(game.getMyColour())) {
             phase = "Jump Phase";
         } else if (game.getPhase() == GamePhase.ABORTED) {
-            phase = "Game aborted. Press any button to go back to lobby...";
+            phase = "Game aborted. Click to go back to lobby...";
         } else {
             phase = game.getPhaseAsString();
         }
@@ -837,7 +839,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    private void drawLobby(Graphics g) {
+    private void drawLobby() {
         setLayout(lobbyLayout);
 
         lblErrorMessage.setText(errorMessage);
@@ -863,7 +865,7 @@ public class GamePanel extends JPanel implements ActionListener {
         add(btnLogout);
     }
 
-    private void drawLogin(Graphics g) {
+    private void drawLogin() {
         setLayout(loginLayout);
 
         lblErrorMessage.setText(errorMessage);
@@ -880,7 +882,7 @@ public class GamePanel extends JPanel implements ActionListener {
         add(btnQuickMatch);
     }
 
-    private void drawRegister(Graphics g) {
+    private void drawRegister() {
         setLayout(registerLayout);
 
         add(lblMillgame);
@@ -895,7 +897,7 @@ public class GamePanel extends JPanel implements ActionListener {
         add(btnBack);
     }
 
-    private void drawQuickMatch(Graphics g) {
+    private void drawQuickMatch() {
         setLayout(quickMatchLayout);
 
         add(lblMillgame);
@@ -930,10 +932,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
         switch (getClientMode()) {
             case Game -> drawGame(g);
-            case Lobby -> drawLobby(g);
-            case Login -> drawLogin(g);
-            case Register -> drawRegister(g);
-            case QuickMatch -> drawQuickMatch(g);
+            case Lobby -> drawLobby();
+            case Login -> drawLogin();
+            case Register -> drawRegister();
+            case QuickMatch -> drawQuickMatch();
         }
 
         if (changes) {

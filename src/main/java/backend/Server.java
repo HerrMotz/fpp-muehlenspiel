@@ -240,6 +240,10 @@ public class Server extends Thread {
             if (accepted) {
                 try {
                     createMatch(requestee, respondee);
+                    playerPool.remove(requestee);
+                    playerPool.remove(respondee);
+                    broadcastPlayerPool();
+
                 } catch (IllegalMoveException e) {
                     e.printStackTrace();
                 }
